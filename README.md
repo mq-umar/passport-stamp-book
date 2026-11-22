@@ -95,6 +95,15 @@ Vanilla JavaScript with classic scripts, so it also works from `file://`. No fra
 
 ## Live demo and deployment
 
+**Vercel (static demo).** `vercel.json` already holds the build (`node scripts/build-static.mjs`), the output folder (`_site`) and the security headers, so there is nothing to configure:
+
+```bash
+npx vercel          # first run: log in and answer the prompts (framework: Other); gives a preview URL
+npx vercel --prod   # publishes to the production URL
+```
+
+Or import the GitHub repository in the Vercel dashboard and every push to `main` deploys. Vercel's *Deployment Protection* is on by default for new projects; to make the demo publicly viewable, turn off **Vercel Authentication** in Project → Settings → Deployment Protection.
+
 A static copy of the app (built-in fake data, no sign-in, no backend) can be published with GitHub Pages: `.github/workflows/pages.yml` lints, tests and publishes only the front-end files, and switches `js/config.js` to static mode. In the repository settings choose **Pages → Source: GitHub Actions**. The mock backend (`npm start`) is for local use only and is not deployed.
 
 ## Security and transparency
