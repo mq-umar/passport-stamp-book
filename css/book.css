@@ -201,3 +201,15 @@ nav .badge { position: absolute; top: 6px; left: 50%; margin-left: 8px; min-widt
 .err { color: var(--bad); font-size: 14px; min-height: 22px; margin-top: 10px; }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* Collection goals */
+.goal-list { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 10px; }
+.goal { background: var(--paper); border: 1px solid var(--rule); padding: 10px 12px; display: grid; gap: 4px; }
+.goal.done { border: 2px solid var(--ink-intl); }
+.g-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-family: var(--serif); }
+.goal small { color: var(--mute); }
+.seal { width: 26px; height: 26px; color: var(--ink-intl); flex: none; }
+.bar-track { height: 6px; border: 1px solid var(--ink); background: var(--page-2); }
+.bar-track i { display: block; height: 100%; background: var(--ink); }
+.goal.done .bar-track i { background: var(--ink-intl); }
+.g-n { font: 12px var(--mono); color: var(--mute); }

@@ -322,3 +322,21 @@ test("a name saved by the previous version (keyed by persona) still shows on the
   assert.match(await page.$eval(".pass", (e) => e.textContent), /Legacy weekend/);
   noErrors(page); await page.closeCtx();
 });
+
+test("goals: progress follows visible stamps and hiding stamps un-completes a goal", async () => {
+  const page = await session();
+  await openDemo(page); await page.select("#pers", "jordan");
+  const goals = () => page.$$eval(".goal", (els) => Object.fromEntries(els.map((e) => [e.querySelector("b").textContent, { done: e.classList.contains("done"), n: e.querySelector(".g-n").textContent }])));
+  const before = await goals();
+  assert.equal(Object.keys(before).length, 5);
+  assert.match(await page.$eval(".goals .count", (e) => e.textContent), /\d of 5 completed/);
+  assert.equal(await page.$eval(".goal .bar-track", (e) => e.getAttribute("role")), "progressbar");
+  assert.equal(before["Weekend roamer"].done, true, "Jordan has 3 states: " + JSON.stringify(before));
+  assert.equal(before["Well fed"].done, true);
+  assert.ok(await page.$(".goal.done .seal"), "a finished goal shows its seal");
+  while (await page.$(".stamp.k-state .hide")) await page.click(".stamp.k-state .hide");
+  const after = await goals();
+  assert.equal(after["Weekend roamer"].done, false);
+  assert.match(after["Weekend roamer"].n, /^0 \/ 3$/);
+  noErrors(page); await page.closeCtx();
+});

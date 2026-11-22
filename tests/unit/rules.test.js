@@ -425,3 +425,16 @@ test("findTrip follows a trip whose start moved later, and returns null once it 
   assert.equal(Rules.findTrip(trips, ""), null);
   assert.equal(Rules.findTrip([], "2026-08-14"), null);
 });
+
+test("computeGoals counts stamps by kind, caps progress and marks finished goals", () => {
+  const st = (k, n) => Array.from({ length: n }, (_, i) => ({ k, label: k + i }));
+  const goals = Object.fromEntries(Rules.computeGoals([...st("state", 4), ...st("dining", 7), ...st("intl", 1)]).map((g) => [g.id, g]));
+  assert.equal(goals.states3.done, true);
+  assert.equal(goals.states5.done, false);
+  assert.equal(goals.states5.have, 4);
+  assert.equal(goals.cuisines5.have, 5, "progress never exceeds the target");
+  assert.equal(goals.cuisines5.done, true);
+  assert.equal(goals.abroad1.done, true);
+  assert.equal(goals.cities5.have, 0);
+  assert.ok(Rules.computeGoals([]).every((g) => !g.done && g.have === 0));
+});

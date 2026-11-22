@@ -159,6 +159,26 @@ var Rules = (function () {
     return hit;
   }
 
+  /** Collection goals: [id, title, stamp kind, target, hint]. Progress is counted from the stamps passed in. */
+  var GOALS = [
+    ["states3", "Weekend roamer", "state", 3, "Collect 3 state stamps"],
+    ["states5", "Five-state tour", "state", 5, "Collect 5 state stamps"],
+    ["cities5", "City hopper", "city", 5, "Collect 5 city stamps"],
+    ["cuisines5", "Well fed", "dining", 5, "Taste 5 different cuisines"],
+    ["abroad1", "Border crosser", "intl", 1, "Collect your first country stamp"]
+  ];
+
+  /**
+   * Progress toward each goal. `stamps` must already exclude hidden stamps, so hiding or refunding a stamp
+   * can lower progress. Returns [{ id, title, hint, k, have, need, done }], `have` capped at `need`.
+   */
+  function computeGoals(stamps) {
+    return GOALS.map(function (g) {
+      var n = stamps.filter(function (s) { return s.k === g[2]; }).length;
+      return { id: g[0], title: g[1], hint: g[4], k: g[2], have: Math.min(n, g[3]), need: g[3], done: n >= g[3] };
+    });
+  }
+
   function tripTitle(trip) { return "Trip to " + trip.dest; }
 
   /**
@@ -219,7 +239,7 @@ var Rules = (function () {
     KIND_LABEL: KIND_LABEL, KIND_VERB: KIND_VERB, STATES: STATES, STATE_NAMES: STATE_NAMES, CUISINES: CUISINES,
     fd: fd, fdow: fdow, fr: fr, monoOf: monoOf, displayName: displayName, hash: hash, txKey: txKey,
     validTx: validTx, computeStamps: computeStamps, stampTrail: stampTrail, computeRecap: computeRecap,
-    computeTrips: computeTrips, tripTitle: tripTitle, titleFor: titleFor, findTrip: findTrip, daysBetween: daysBetween, MAX_TRIP_GAP_DAYS: MAX_TRIP_GAP_DAYS,
+    computeTrips: computeTrips, computeGoals: computeGoals, tripTitle: tripTitle, titleFor: titleFor, findTrip: findTrip, daysBetween: daysBetween, MAX_TRIP_GAP_DAYS: MAX_TRIP_GAP_DAYS,
     groupByDay: groupByDay
   };
 })();

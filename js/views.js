@@ -85,6 +85,22 @@ var Views = (function () {
       R.CUISINES.map(function (x) { var got = cuis[x]; return '<li class="' + (got ? "got" : "") + '">' + esc(x) + '<span class="vh">' + (got ? " collected" : " not yet") + '</span></li>'; }).join("") + '</ul></section>';
   }
 
+  var SEAL = '<svg class="seal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5" stroke-dasharray="2 2"/><path d="M9 12.2l2 2 4-4.4" stroke-linecap="square"/></svg>';
+
+  /** Goal cards with a plain progress bar; a finished goal gets a commemorative seal. */
+  function goals(c) {
+    if (!c.visible.length) return "";
+    var gs = R.computeGoals(c.visible);
+    var got = gs.filter(function (g) { return g.done; }).length;
+    return '<section class="goals" aria-label="Collection goals"><h2 class="sec">Goals</h2><p class="count">' + got + ' of ' + gs.length + ' completed</p><ul class="goal-list">' +
+      gs.map(function (g) {
+        var pct = Math.round(g.have / g.need * 100);
+        return '<li class="goal' + (g.done ? " done" : "") + '"><div class="g-top"><b>' + esc(g.title) + '</b>' + (g.done ? SEAL + '<span class="vh">Completed</span>' : "") + '</div>' +
+          '<small>' + esc(g.hint) + '</small><div class="bar-track" role="progressbar" aria-label="' + esc(g.title) + '" aria-valuemin="0" aria-valuemax="' + g.need +
+          '" aria-valuenow="' + g.have + '"><i style="width:' + pct + '%"></i></div><span class="g-n">' + g.have + ' / ' + g.need + '</span></li>';
+      }).join("") + '</ul></section>';
+  }
+
   function passport(c) {
     var S = c.S;
     if (!S.onboarded) return onboarding(c);
@@ -101,7 +117,7 @@ var Views = (function () {
     else h += '<div class="panel empty"><b>No stamps yet</b>Turn on dining or domestic stamps in Settings to start collecting.<br><br><button class="p" data-tab="settings">Open settings</button></div>';
     var hc = c.all.filter(function (x) { return S.hidden.has(x.id); }).length;
     if (hc) h += '<p><button id="restore" ' + (S.offline ? "disabled" : "") + '>Restore ' + hc + ' hidden</button></p>';
-    return h + indexPages(c);
+    return h + goals(c) + indexPages(c);
   }
 
   function pass(c, r) {
