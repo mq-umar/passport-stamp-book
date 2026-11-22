@@ -374,3 +374,18 @@ test("PWA files are served with the right types and the service worker never nee
   assert.ok(manifest.icons.length > 0);
   assert.match((await rawGet("/sw.js")).body, /\/api\//, "service worker must skip /api");
 });
+
+test("every response type carries the security headers, including errors", async () => {
+  const paths = ["/", "/css/book.css", "/js/main.js", "/sw.js", "/api/prefs", "/nope"];
+  for (const p of paths) {
+    const { headers } = await rawGet(p);
+    assert.equal(headers["x-content-type-options"], "nosniff", p);
+    assert.equal(headers["x-frame-options"], "DENY", p);
+    assert.equal(headers["referrer-policy"], "no-referrer", p);
+    assert.match(headers["content-security-policy"], /default-src 'self'/, p);
+    assert.match(headers["content-security-policy"], /frame-ancestors 'none'/, p);
+    assert.match(headers["content-security-policy"], /object-src 'none'/, p);
+    assert.doesNotMatch(headers["content-security-policy"], /script-src[^;]*unsafe-(inline|eval)/, p);
+    assert.match(headers["permissions-policy"], /geolocation=\(\)/, p);
+  }
+});

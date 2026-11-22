@@ -11,6 +11,17 @@ const DATA = JSON.parse(fs.readFileSync(path.join(__dirname, "data.json"), "utf8
 const MAX_BODY = 100 * 1024;
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
 const MAX_SESSIONS = 500;
+// Sent with every response. The page also carries the same policy in a <meta> tag so static hosts are covered;
+// frame-ancestors only works as a header, so it lives here.
+const SECURITY_HEADERS = Object.freeze({
+  "x-content-type-options": "nosniff",
+  "referrer-policy": "no-referrer",
+  "x-frame-options": "DENY",
+  "cross-origin-opener-policy": "same-origin",
+  "permissions-policy": "geolocation=(), camera=(), microphone=(), payment=()",
+  "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+});
+
 const STATIC_FILES = Object.freeze({
   "/": { file: "index.html", contentType: "text/html; charset=utf-8", cacheControl: "no-store" },
   "/index.html": { file: "index.html", contentType: "text/html; charset=utf-8", cacheControl: "no-store" },
@@ -121,8 +132,7 @@ function sendJson(res, status, value, extraHeaders = {}) {
   res.writeHead(status, {
     "content-type": "application/json; charset=utf-8",
     "cache-control": "no-store",
-    "x-content-type-options": "nosniff",
-    "referrer-policy": "no-referrer",
+    ...SECURITY_HEADERS,
     ...extraHeaders,
   });
   res.end(JSON.stringify(value));
@@ -152,8 +162,7 @@ async function serveStaticFile(req, res, filePath, contentType, cacheControl) {
   res.writeHead(200, {
     "content-type": contentType,
     "cache-control": cacheControl,
-    "x-content-type-options": "nosniff",
-    "referrer-policy": "no-referrer",
+    ...SECURITY_HEADERS,
     "content-length": contents.length,
   });
   res.end(req.method === "HEAD" ? undefined : contents);

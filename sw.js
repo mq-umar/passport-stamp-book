@@ -2,8 +2,8 @@
  * It never touches /api, so sign-in and card data are never stored by it. */
 "use strict";
 var CACHE = "passport-shell-v1";
-var SHELL = ["./", "index.html", "css/tokens.css", "css/book.css", "css/stamps.css", "js/data.js", "js/rules.js",
-  "js/stamps-art.js", "js/store.js", "js/views.js", "js/main.js", "icon.svg", "manifest.webmanifest"];
+var SHELL = ["./", "index.html", "css/tokens.css", "css/book.css", "css/stamps.css", "js/config.js", "js/data.js", "js/rules.js",
+  "js/stamps-art.js", "js/store.js", "js/views.js", "js/main.js", "js/boot.js", "icon.svg", "manifest.webmanifest"];
 
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(SHELL); }).then(function () { return self.skipWaiting(); }));

@@ -120,3 +120,29 @@ test("after one visit the app shell opens offline, and nothing from /api is cach
   assert.ok(cached.length > 5 && cached.every((p) => !p.startsWith("/api/")), cached.join(","));
   await page.closeCtx();
 });
+
+test("static mode (no backend, as on GitHub Pages) skips sign-in and uses the built-in data", async () => {
+  const page = await newPage(browser);
+  await page.evaluateOnNewDocument(() => { window.__static = true; });
+  // config.js sets the flag to false; the static host replaces that file. Emulate it by intercepting the request.
+  await page.setRequestInterception(true);
+  page.on("request", (r) => (r.url().endsWith("/js/config.js") ? r.respond({ status: 200, contentType: "text/javascript", body: "window.PASSPORT_STATIC = true;" }) : r.continue()));
+  await page.goto(base);
+  assert.doesNotMatch(await page.$eval("#app", (e) => e.textContent), /Sign in/);
+  assert.ok(await page.$("#open"), "the cover shows straight away");
+  assert.equal(await page.evaluate(async () => (await fetch("/api/prefs")).status), 401, "backend still refuses anonymous calls");
+  await page.closeCtx();
+});
+
+test("content security policy blocks an injected inline script and inline event handler", async () => {
+  const page = await newPage(browser);
+  await page.goto(base);
+  await page.evaluate(() => {
+    window.__pwned = 0;
+    const s = document.createElement("script"); s.textContent = "window.__pwned++"; document.head.appendChild(s);
+    const d = document.createElement("div"); d.innerHTML = '<img src="x" onerror="window.__pwned++">'; document.body.appendChild(d);
+  });
+  await sleep(400);
+  assert.equal(await page.evaluate(() => window.__pwned), 0, "neither the script nor the handler may run");
+  await page.closeCtx();
+});

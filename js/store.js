@@ -2,7 +2,7 @@
 var Store = (function () {
   "use strict";
   var KEY = "passport-proto-v2";
-  var API = location.protocol.indexOf("http") === 0;
+  var API = location.protocol.indexOf("http") === 0 && !window.PASSPORT_STATIC; // see js/config.js
 
   var DEFAULTS = function () {
     return {

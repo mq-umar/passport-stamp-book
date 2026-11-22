@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
 <meta name="color-scheme" content="light dark">
 <meta name="description" content="A concept stamp-book for everyday trips and meals. Fake data only.">
 <meta name="theme-color" content="#5b1a1a">
@@ -21,12 +22,13 @@
 <div id="app"></div>
 <div id="live" class="vh" role="status" aria-live="polite"></div>
 <noscript><p style="padding:24px;font-family:sans-serif">This prototype needs JavaScript.</p></noscript>
+<script src="js/config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/rules.js"></script>
 <script src="js/stamps-art.js"></script>
 <script src="js/store.js"></script>
 <script src="js/views.js"></script>
 <script src="js/main.js"></script>
-<script>if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) navigator.serviceWorker.register("sw.js").catch(function () {});</script>
+<script src="js/boot.js"></script>
 </body>
 </html>
