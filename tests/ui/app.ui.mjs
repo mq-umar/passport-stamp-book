@@ -1,3 +1,4 @@
+/* global PERSONAS */
 // End-to-end behaviour of the front end, opened from file:// with built-in data.
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
