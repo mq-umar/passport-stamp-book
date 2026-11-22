@@ -330,3 +330,20 @@ test("JSON write endpoints require a JSON content type", async () => {
   assert.equal(result.response.status, 415);
   assert.deepEqual(result.body, { error: "content type must be application/json" });
 });
+
+test("recap names are stored per trip (persona:date) and per persona, and nothing else", async () => {
+  const { body: { token } } = await login();
+  const headers = { authorization: `Bearer ${token}`, "content-type": "application/json" };
+  const base = { types: { dining: true, domestic: true }, hidden: [], refunded: [], disputed: [] };
+  const put = (title) => request("/api/prefs", { method: "PUT", headers, body: JSON.stringify({ ...base, title }) });
+
+  for (const good of [{ maya: "Weekend" }, { "jordan:2026-10-23": "Seattle" }, { maya: "A", "jordan:2026-08-14": "Denver", "jordan:2026-09-18": "Austin" }]) {
+    assert.equal((await put(good)).response.status, 200, JSON.stringify(good));
+  }
+  const stored = await request("/api/prefs", { headers });
+  assert.equal(stored.body.title["jordan:2026-09-18"], "Austin");
+
+  for (const bad of [{ "nobody:2026-10-23": "x" }, { "jordan:20261023": "x" }, { "jordan:../x": "x" }, { "JORDAN": "x" }, { "jordan:2026-10-23:x": "x" }, { "jordan:2026-10-23": 5 }]) {
+    assert.equal((await put(bad)).response.status, 400, JSON.stringify(bad));
+  }
+});

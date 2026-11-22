@@ -10,7 +10,7 @@ var Store = (function () {
       opened: false, onboarded: false, obStep: 0,
       hidden: new Set(), refunded: new Set(), disputed: new Set(), seen: new Set(),
       types: { dining: false, domestic: false }, showNames: false, offline: false,
-      events: [], title: {}, queue: [], notice: "", demoOpen: false, filter: "all", q: "", reported: []
+      events: [], title: {}, queue: [], notice: "", demoOpen: false, filter: "all", tripSel: "", q: "", reported: []
     };
   };
   var S = DEFAULTS();

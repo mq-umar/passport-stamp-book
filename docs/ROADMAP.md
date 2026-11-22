@@ -20,7 +20,7 @@ Rules for every pass: tests stay green and never decrease in number; visual chan
 - [ ] 7. Deployment pack (documented, not executed)
 
 ## Track 2: New product features
-- [ ] 1. Real trip detection (gap or destination change) and a "Past trips" list
+- [x] 1. Real trip detection (gap of more than 2 days starts a new trip) and an "All trips" list; fourth demo persona with three trips
 - [ ] 2. Collection goals with a commemorative stamp
 - [ ] 3. Privacy centre: export and delete my data
 - [ ] 4. Notification preferences and digest preview (PRD US15)

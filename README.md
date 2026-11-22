@@ -1,6 +1,6 @@
 # Passport stamp book
 
-**A product concept, built end to end:** a stamp-book for everyday trips and meals, styled as a physical passport. It started as a product requirements document and became a working prototype, with a mock backend and 69 automated tests.
+**A product concept, built end to end:** a stamp-book for everyday trips and meals, styled as a physical passport. It started as a product requirements document and became a working prototype, with a mock backend and 76 automated tests.
 
 > Independent portfolio concept. Fake data only. It is **not affiliated with, or endorsed by, any card issuer**, uses no issuer branding, and contains no real customer data.
 
@@ -24,12 +24,12 @@ Digital travel stamps exist, but they reward only international trips. People wh
 - **Pressed-ink stamps**: four shapes (round city, boxed state, hexagonal dining, double-ring country), ink-bleed edges, postmarks, drawn entirely in SVG.
 - **Stamp detail**: the purchases that earned it, with amounts shown only there. Hide a stamp or report a wrong one.
 - **Search and filter**, plus a back-of-book **index** (50 states, 20 cuisines).
-- **Trip recap as a boarding pass** with route, barcode and places timeline. **Share or save it as an image**; amounts and card details never appear, restaurant names are opt-in.
+- **Trip recap as a boarding pass** with route, barcode and places timeline. Trips are detected automatically (a pause of more than two days starts a new one), each with its own recap and name, and an **All trips** list to revisit past ones. **Share or save it as an image**; amounts and card details never appear, restaurant names are opt-in.
 - **Three-step onboarding** that states the privacy promises before asking for any choice.
 - **Offline mode**: cached snapshot, paused changes, queued edits that sync on reconnect, all surviving a reload.
 - **Mock backend**: sign-in, a transaction feed per persona and server-side preferences.
 - **Night mode**, reduced-motion support, keyboard and screen-reader support.
-- **Demo controls** (bottom of each screen): switch persona, go offline, refund or dispute a purchase and watch the stamps react.
+- **Demo controls** (bottom of each screen): switch between four personas, go offline, refund or dispute a purchase and watch the stamps react.
 
 ## Run it
 
@@ -48,7 +48,7 @@ On first open, tap the cover, walk through onboarding, then try **Demo controls 
 ## Tests
 
 ```bash
-npm test            # 34 unit + API tests (Node built-in runner, no dependencies)
+npm test            # 39 unit + API tests (Node built-in runner, no dependencies)
 npm install         # once, for the browser tests
 npm run test:ui     # browser tests (Puppeteer) incl. an axe accessibility audit
 npm run test:layout # text-fit audit at six widths, light and night
@@ -91,7 +91,7 @@ The app is a passport book rather than a dashboard: cover, ruled pages, ink-bled
 
 - **Not tested on a real phone or with a real screen reader.** The share sheet path is covered by a mocked test, and accessibility by automated audits, which catch only part of the problems.
 - The backend is a mock: one demo login, in-memory sessions, fake data. A real build would use real authentication, a card-transaction feed and rate limiting.
-- The prototype treats all trip transactions as one trip. Real trip detection (gaps, multiple trips) is specified in the PRD but not built.
+- Trip detection is a simple rule (a gap of more than two days between away-from-home purchases). It does not yet merge multi-city itineraries or use destination changes.
 - Stamps are app-only. The PRD discusses, and defers, putting any stamp on a blockchain.
 
 ## License

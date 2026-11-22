@@ -155,6 +155,120 @@ var PERSONAS={
   "holder": "Priya",
   "role": "Aspirational Traveler",
   "docNo": "0861"
+ },
+ "jordan": {
+  "name": "Jordan (Road Tripper)",
+  "holder": "Jordan",
+  "role": "Road Tripper",
+  "docNo": "0529",
+  "tx": [
+   {
+    "id": 1,
+    "d": "2026-08-14",
+    "m": "Green Chile Kitchen",
+    "city": "Denver",
+    "st": "CO",
+    "cat": "dining",
+    "cuisine": "Mexican",
+    "amt": 31,
+    "status": "posted",
+    "miles": 920
+   },
+   {
+    "id": 2,
+    "d": "2026-08-15",
+    "m": "Alpine Steakhouse",
+    "city": "Denver",
+    "st": "CO",
+    "cat": "dining",
+    "cuisine": "Steakhouse",
+    "amt": 64,
+    "status": "posted",
+    "miles": 920
+   },
+   {
+    "id": 3,
+    "d": "2026-08-16",
+    "m": "Union Station Gifts",
+    "city": "Denver",
+    "st": "CO",
+    "cat": "retail",
+    "amt": 22,
+    "status": "posted",
+    "miles": 920
+   },
+   {
+    "id": 4,
+    "d": "2026-09-18",
+    "m": "Pit Master Smokehouse",
+    "city": "Austin",
+    "st": "TX",
+    "cat": "dining",
+    "cuisine": "Barbecue",
+    "amt": 29,
+    "status": "posted",
+    "miles": 970
+   },
+   {
+    "id": 5,
+    "d": "2026-09-19",
+    "m": "Tacos El Sol",
+    "city": "Austin",
+    "st": "TX",
+    "cat": "dining",
+    "cuisine": "Mexican",
+    "amt": 14,
+    "status": "posted",
+    "miles": 970
+   },
+   {
+    "id": 6,
+    "d": "2026-09-20",
+    "m": "South Congress Books",
+    "city": "Austin",
+    "st": "TX",
+    "cat": "retail",
+    "amt": 35,
+    "status": "posted",
+    "miles": 970
+   },
+   {
+    "id": 7,
+    "d": "2026-10-23",
+    "m": "Harbor Fish House",
+    "city": "Seattle",
+    "st": "WA",
+    "cat": "dining",
+    "cuisine": "Seafood",
+    "amt": 52,
+    "status": "posted",
+    "miles": 1730
+   },
+   {
+    "id": 8,
+    "d": "2026-10-24",
+    "m": "Pike Noodle House",
+    "city": "Seattle",
+    "st": "WA",
+    "cat": "dining",
+    "cuisine": "Chinese",
+    "amt": 18,
+    "status": "posted",
+    "miles": 1730
+   },
+   {
+    "id": 9,
+    "d": "2026-10-25",
+    "m": "Ferry Coffee",
+    "city": "Seattle",
+    "st": "WA",
+    "cat": "dining",
+    "cuisine": null,
+    "amt": 6,
+    "status": "posted",
+    "miles": 1730
+   }
+  ]
  }
 };
 if(typeof module!=="undefined"&&module.exports)module.exports=PERSONAS;

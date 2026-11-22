@@ -329,3 +329,63 @@ test("two cities with the same name in different states get different stamps", (
   assert.notEqual(stamps[0].id, stamps[1].id);
   assert.deepEqual(Rules.stampTrail("maya", transactions, makeOptions(), stamps[0]).map(t => t.st), ["IL"]);
 });
+
+test("computeTrips splits on a gap of more than two days and keeps shorter pauses together", () => {
+  const tx = [
+    makeTx({ id: 1, d: "2026-08-14", city: "Denver", st: "CO", miles: 900 }),
+    makeTx({ id: 2, d: "2026-08-16", city: "Denver", st: "CO", miles: 900 }), // 2-day gap: same trip
+    makeTx({ id: 3, d: "2026-08-19", city: "Austin", st: "TX", miles: 970 }), // 3-day gap: new trip
+    makeTx({ id: 4, d: "2026-08-20", city: "Austin", st: "TX", miles: 970 }),
+    makeTx({ id: 5, d: "2026-08-20", city: "Chicago", st: "IL", miles: 2 }), // at home: never part of a trip
+  ];
+  const trips = Rules.computeTrips("maya", tx, makeOptions());
+  assert.equal(trips.length, 2);
+  assert.deepEqual(trips.map(t => [t.id, t.start, t.end, t.dest, t.tx.length]), [
+    ["2026-08-14", "2026-08-14", "2026-08-16", "Denver", 2],
+    ["2026-08-19", "2026-08-19", "2026-08-20", "Austin", 2],
+  ]);
+});
+
+test("computeTrips sorts unsorted input and drops refunded, disputed, pending and under-minimum purchases", () => {
+  const tx = [
+    makeTx({ id: 4, d: "2026-09-20", city: "Austin", st: "TX", miles: 900 }),
+    makeTx({ id: 1, d: "2026-08-14", city: "Denver", st: "CO", miles: 900 }),
+    makeTx({ id: 2, d: "2026-08-15", city: "Denver", st: "CO", miles: 900, status: "pending" }),
+    makeTx({ id: 3, d: "2026-08-15", city: "Denver", st: "CO", miles: 900, amt: 2 }),
+    makeTx({ id: 5, d: "2026-09-21", city: "Austin", st: "TX", miles: 900 }),
+  ];
+  const opts = makeOptions({ refunded: new Set(["maya:5"]) });
+  const trips = Rules.computeTrips("maya", tx, opts);
+  assert.deepEqual(trips.map(t => t.tx.map(x => x.id)), [[1], [4]]);
+});
+
+test("computeRecap shows the latest trip by default and any earlier trip by id", () => {
+  const tx = [
+    makeTx({ id: 1, d: "2026-08-14", city: "Denver", st: "CO", miles: 920, cat: "dining", cuisine: "Mexican" }),
+    makeTx({ id: 2, d: "2026-09-18", city: "Austin", st: "TX", miles: 970, cat: "dining", cuisine: "Barbecue" }),
+    makeTx({ id: 3, d: "2026-10-23", city: "Seattle", st: "WA", miles: 1730, cat: "retail" }),
+  ];
+  const opts = makeOptions({ types: { dining: true, domestic: true } });
+  const stamps = Rules.computeStamps("maya", tx, opts);
+
+  const latest = Rules.computeRecap("maya", tx, opts, stamps);
+  assert.equal(latest.id, "2026-10-23");
+  assert.equal(latest.to, "SEA");
+  assert.equal(latest.count, 3);
+  assert.equal(latest.title, "Trip to Seattle");
+
+  const denver = Rules.computeRecap("maya", tx, opts, stamps, "Rockies", "2026-08-14");
+  assert.equal(denver.title, "Rockies");
+  assert.equal(denver.to, "DEN");
+  assert.deepEqual(denver.stamps.map(s => s.label).sort(), ["CO", "Denver", "Mexican"]);
+
+  assert.equal(Rules.computeRecap("maya", tx, opts, stamps, "", "1999-01-01").id, "2026-10-23", "unknown id falls back to the latest trip");
+  assert.equal(Rules.computeRecap("maya", [], opts, []), null);
+});
+
+test("daysBetween is exact across month ends and daylight-saving changes", () => {
+  assert.equal(Rules.daysBetween("2026-02-28", "2026-03-01"), 1);
+  assert.equal(Rules.daysBetween("2026-03-07", "2026-03-09"), 2); // US clocks change on Mar 8 2026
+  assert.equal(Rules.daysBetween("2026-11-01", "2026-11-03"), 2); // and on Nov 1
+  assert.equal(Rules.daysBetween("2026-10-09", "2026-10-09"), 0);
+});

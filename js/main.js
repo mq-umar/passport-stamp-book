@@ -10,9 +10,13 @@
     var o = { types: S.types, refunded: S.refunded, disputed: S.disputed };
     var all = Rules.computeStamps(S.p, persona.tx, o);
     var live = all.filter(function (s) { return !S.hidden.has(s.id); });
-    var liveRecap = Rules.computeRecap(S.p, persona.tx, o, live, S.title[S.p]);
+    var trips = Rules.computeTrips(S.p, persona.tx, o);
+    var selId = trips.length ? trips[trips.length - 1].id : "";
+    trips.forEach(function (t) { if (t.id === S.tripSel) selId = t.id; });
+    var titleKey = S.p + ":" + selId;
+    var liveRecap = Rules.computeRecap(S.p, persona.tx, o, live, S.title[titleKey], selId);
     var cached = S.offline && S.cache;
-    return { S: S, persona: persona, all: all, live: live, liveRecap: liveRecap,
+    return { S: S, persona: persona, all: all, live: live, liveRecap: liveRecap, trips: trips, selId: selId, titleKey: titleKey,
       visible: cached ? S.cache.v : live, recap: cached ? S.cache.r : liveRecap };
   }
 
@@ -90,6 +94,7 @@
     if (d.ob !== undefined) { S.obStep = +d.ob; render(); return; }
     if (t.hasAttribute("data-ob-done")) { S.onboarded = true; Store.log("onboarding_done", S.types); render(); return; }
     if (d.filter) { S.filter = d.filter; render(); return; }
+    if (d.trip) { S.tripSel = d.trip; S.msg = ""; Store.log("trip_selected", { id: d.trip }); render(); return; }
     if (d.open) { S.sheet = d.open; lastOpener = d.open; Store.log("stamp_viewed", { id: d.open }); render(); return; }
     if (t.hasAttribute("data-close-sheet")) { closeSheet(); return; }
     if (d.hide) { S.hidden.add(d.hide); S.sheet = null; focusMain = true; Store.log("stamp_hidden", { id: d.hide }); render(); return; }
@@ -103,8 +108,9 @@
     if (t.id === "so") { Store.signOut(); render(); return; }
     if (t.id === "rnb") {
       var v = document.getElementById("rn").value;
-      if (S.offline) { S.queue.push({ p: S.p, v: v }); Store.log("recap_edited", { queued: true }); }
-      else { S.title[S.p] = v; Store.log("recap_edited", { queued: false }); }
+      var key = ctx().titleKey;
+      if (S.offline) { S.queue.push({ p: S.p, k: key, v: v }); Store.log("recap_edited", { queued: true }); }
+      else { S.title[key] = v; Store.log("recap_edited", { queued: false }); }
       render(); return;
     }
     if (t.id === "share") share("share");
@@ -118,11 +124,11 @@
     if (t.id === "off") {
       S.offline = t.checked;
       if (S.offline) { var c = ctx(); S.cache = { v: c.live, r: c.liveRecap, at: new Date().toISOString().slice(0, 16).replace("T", " ") }; }
-      else if (S.queue.length) { S.queue.forEach(function (q) { S.title[q.p] = q.v; }); Store.log("queue_synced", { n: S.queue.length }); S.queue = []; }
+      else if (S.queue.length) { S.queue.forEach(function (q) { S.title[q.k || q.p] = q.v; }); Store.log("queue_synced", { n: S.queue.length }); S.queue = []; }
       render(); return;
     }
     if (t.id === "pers") {
-      S.p = t.value; S.sheet = null; Store.log("persona_changed", { p: S.p });
+      S.p = t.value; S.sheet = null; S.tripSel = ""; Store.log("persona_changed", { p: S.p });
       Store.loadTx().then(render); return;
     }
   });

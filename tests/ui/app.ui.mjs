@@ -229,3 +229,38 @@ test("hiding a stamp moves focus somewhere sensible instead of dropping it", asy
   assert.equal(await page.evaluate(() => document.activeElement.tagName), "MAIN");
   noErrors(page); await page.closeCtx();
 });
+
+test("several trips: latest by default, past trips can be opened, and each keeps its own name", async () => {
+  const page = await session();
+  await openDemo(page);
+  await page.select("#pers", "jordan");
+  await tab(page, "trips");
+  assert.match(await page.$eval(".pass", (e) => e.textContent), /Trip to Seattle/);
+  assert.match(await page.$eval(".pass", (e) => e.textContent), /SEA/);
+  const rows = await page.$$eval(".trip-row", (els) => els.map((e) => e.textContent));
+  assert.equal(rows.length, 3);
+  assert.match(rows[0], /Seattle/); assert.match(rows[2], /Denver/);
+  assert.equal(await page.$eval(".trip-row[aria-pressed=true]", (e) => e.textContent.includes("Seattle")), true);
+
+  await page.click('[data-trip="2026-08-14"]');
+  assert.match(await page.$eval(".pass", (e) => e.textContent), /Trip to Denver/);
+  assert.match(await page.$eval(".pass", (e) => e.textContent), /DEN/);
+  assert.match(await page.$eval(".pass", (e) => e.textContent), /Aug 14.16, 2026/);
+  assert.match(await page.$eval(".day", (e) => e.textContent), /Fri · Aug 14/);
+  await page.$eval("#rn", (e) => (e.value = "Rockies road trip"));
+  await page.click("#rnb");
+  await page.click('[data-trip="2026-10-23"]');
+  assert.match(await page.$eval(".pass", (e) => e.textContent), /Trip to Seattle/, "renaming Denver must not rename Seattle");
+  assert.match(await page.$eval(".tripbook", (e) => e.textContent), /Rockies road trip/);
+
+  await page.reload();
+  assert.match(await page.$eval(".tripbook", (e) => e.textContent), /Rockies road trip/, "per-trip names persist");
+  noErrors(page); await page.closeCtx();
+});
+
+test("a single-trip persona has no trip list", async () => {
+  const page = await session();
+  await tab(page, "trips");
+  assert.equal(await page.$(".tripbook"), null);
+  noErrors(page); await page.closeCtx();
+});

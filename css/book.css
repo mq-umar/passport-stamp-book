@@ -124,6 +124,15 @@ input[type=checkbox]:disabled { opacity: .5; cursor: not-allowed; }
 .place b { font: 600 16px var(--serif); }
 .place span { font: 12px var(--mono); color: var(--mute); text-align: right; }
 
+/* ---------- all trips ---------- */
+.tripbook { margin: 0 0 14px; padding: 0; list-style: none; border-top: 1px solid var(--rule); }
+.trip-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; text-align: left; border: 0; border-bottom: 1px dotted var(--rule); border-radius: 0; padding: 10px 10px 10px 12px; min-height: 56px; background: none; color: var(--ink); font-weight: 400; letter-spacing: 0; }
+.trip-row b { display: block; font: 600 17px var(--serif); }
+.trip-row small { font: 12px var(--mono); }
+.trip-row .n { font: 600 12px var(--mono); color: var(--mute); white-space: nowrap; }
+.trip-row[aria-pressed=true] { box-shadow: inset 4px 0 0 var(--accent); background: var(--page-2); }
+.trip-row:hover:not(:disabled) { background: var(--page-2); color: var(--ink); }
+
 /* ---------- index pages ---------- */
 .index { margin-top: 8px; }
 .idx { display: flex; flex-wrap: wrap; gap: 6px 8px; margin: 0 0 8px; padding: 0; list-style: none; }

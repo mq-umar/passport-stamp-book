@@ -103,9 +103,11 @@ function validPrefs(value) {
   }
 
   if (Object.hasOwn(value, "title")) {
-    if (!isPlainObject(value.title) || Object.keys(value.title).length > 20) return false;
-    for (const [persona, title] of Object.entries(value.title)) {
-      if (!Object.hasOwn(DATA, persona) || typeof title !== "string" || title.length > 200) return false;
+    // keys are "persona" or "persona:YYYY-MM-DD" (one recap name per trip)
+    if (!isPlainObject(value.title) || Object.keys(value.title).length > 200) return false;
+    for (const [key, title] of Object.entries(value.title)) {
+      const parts = /^([a-z]+)(?::\d{4}-\d{2}-\d{2})?$/.exec(key);
+      if (!parts || !Object.hasOwn(DATA, parts[1]) || typeof title !== "string" || title.length > 200) return false;
     }
   }
   return true;

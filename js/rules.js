@@ -11,6 +11,7 @@ var Rules = (function () {
 
   var MIN_AMT = 5;
   var MIN_MILES = 75;
+  var MAX_TRIP_GAP_DAYS = 2; // a longer pause between purchases starts a new trip
   var MAX_NEW_STAMPS_PER_DAY = 10;
   var HOME = { name: "Chicago, IL", code: "CHI" };
 
@@ -35,7 +36,7 @@ var Rules = (function () {
     "Japanese", "Korean", "Mexican", "Middle Eastern", "Pizza", "Seafood", "Southern", "Spanish", "Steakhouse",
     "Thai", "Vegetarian", "Vietnamese"];
 
-  var AIRPORT = { Nashville: "BNA", "New York": "JFK", Paris: "CDG", Chicago: "ORD" };
+  var AIRPORT = { Nashville: "BNA", "New York": "JFK", Paris: "CDG", Chicago: "ORD", Denver: "DEN", Austin: "AUS", Seattle: "SEA" };
 
   var MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   var DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -121,26 +122,55 @@ var Rules = (function () {
     });
   }
 
+  /** Whole days between two "YYYY-MM-DD" dates (UTC, so daylight saving cannot skew it). */
+  function daysBetween(a, b) {
+    var pa = a.split("-"), pb = b.split("-");
+    return Math.round((Date.UTC(+pb[0], +pb[1] - 1, +pb[2]) - Date.UTC(+pa[0], +pa[1] - 1, +pa[2])) / 86400000);
+  }
+
   /**
-   * The current trip: all valid transactions more than MIN_MILES from home, in date order. The prototype treats them as one trip.
-   * Returns null when there is no trip. `stamps` must already exclude hidden stamps.
+   * Trips, oldest first: valid transactions more than MIN_MILES from home, in date order,
+   * split wherever two purchases are more than MAX_TRIP_GAP_DAYS apart.
+   * Each trip is { id (its first date), start, end, dest (first city), tx }.
    */
-  function computeRecap(persona, tx, o, stamps, title) {
-    var trip = validTx(persona, tx, o).filter(function (t) { return t.miles > MIN_MILES; })
+  function computeTrips(persona, tx, o) {
+    var away = validTx(persona, tx, o).filter(function (t) { return t.miles > MIN_MILES; })
       .sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
-    if (!trip.length) return null;
+    var trips = [], cur = null;
+    away.forEach(function (t) {
+      if (!cur || daysBetween(cur.end, t.d) > MAX_TRIP_GAP_DAYS) {
+        cur = { id: t.d, start: t.d, end: t.d, dest: t.city, tx: [] };
+        trips.push(cur);
+      }
+      cur.tx.push(t); cur.end = t.d;
+    });
+    return trips;
+  }
+
+  function tripTitle(trip) { return "Trip to " + trip.dest; }
+
+  /**
+   * Recap of one trip: the latest unless `tripId` names another.
+   * `stamps` must already exclude hidden stamps. Returns null when there are no trips.
+   */
+  function computeRecap(persona, tx, o, stamps, title, tripId) {
+    var trips = computeTrips(persona, tx, o);
+    if (!trips.length) return null;
+    var trip = trips[trips.length - 1];
+    trips.forEach(function (t) { if (tripId && t.id === tripId) trip = t; });
     var ids = {};
-    trip.forEach(function (t) { ids[t.id] = 1; });
-    var dest = trip[0].city;
+    trip.tx.forEach(function (t) { ids[t.id] = 1; });
     return {
-      title: title || "Trip to " + dest,
-      dates: fr(trip[0].d, trip[trip.length - 1].d),
+      id: trip.id,
+      count: trips.length,
+      title: title || tripTitle(trip),
+      dates: fr(trip.start, trip.end),
       from: HOME.code,
-      to: AIRPORT[dest] || dest.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase(),
-      destCity: dest,
-      dining: trip.filter(function (t) { return t.cat === "dining"; }).length,
+      to: AIRPORT[trip.dest] || trip.dest.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase(),
+      destCity: trip.dest,
+      dining: trip.tx.filter(function (t) { return t.cat === "dining"; }).length,
       stamps: stamps.filter(function (s) { return ids[s.tx]; }),
-      tx: trip
+      tx: trip.tx
     };
   }
 
@@ -159,6 +189,7 @@ var Rules = (function () {
     KIND_LABEL: KIND_LABEL, KIND_VERB: KIND_VERB, STATES: STATES, STATE_NAMES: STATE_NAMES, CUISINES: CUISINES,
     fd: fd, fdow: fdow, fr: fr, monoOf: monoOf, displayName: displayName, hash: hash, txKey: txKey,
     validTx: validTx, computeStamps: computeStamps, stampTrail: stampTrail, computeRecap: computeRecap,
+    computeTrips: computeTrips, tripTitle: tripTitle, daysBetween: daysBetween, MAX_TRIP_GAP_DAYS: MAX_TRIP_GAP_DAYS,
     groupByDay: groupByDay
   };
 })();
