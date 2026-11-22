@@ -394,3 +394,22 @@ test("users never see developer tools: no event log anywhere, prototype tools on
   assert.doesNotMatch(await page.$eval("body", (e) => e.textContent), /Event log|"e":/);
   noErrors(page); await page.closeCtx();
 });
+
+test("hide a place from the recap: it leaves the preview and count, can be shown again, and survives a reload", async () => {
+  const page = await session();
+  await tab(page, "trips");
+  const meals = () => page.$$eval(".pass .fields dd", (d) => d[2].textContent.trim());
+  const before = await meals();
+  const first = await page.$eval("[data-place]", (b) => b.dataset.place);
+  await page.click("[data-place]");
+  assert.equal(await page.evaluate(() => document.activeElement.dataset.place !== undefined), true, "focus stays on the toggle");
+  assert.ok(await page.$(".place.gone"), "the place is struck through, not removed");
+  assert.notEqual(await meals(), before);
+  assert.equal(await page.$eval(`[data-place="${first}"]`, (b) => b.getAttribute("aria-pressed")), "true");
+  await page.reload(); await tab(page, "trips");
+  assert.ok(await page.$(".place.gone"), "persisted");
+  await page.click(`[data-place="${first}"]`);
+  assert.equal(await page.$(".place.gone"), null);
+  assert.equal(await meals(), before);
+  noErrors(page); await page.closeCtx();
+});

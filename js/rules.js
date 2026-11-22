@@ -201,7 +201,7 @@ var Rules = (function () {
 
   /**
    * Recap of one trip: the latest unless `tripId` names another.
-   * `stamps` must already exclude hidden stamps. Returns null when there are no trips.
+   * `o.hiddenPlaces` (optional Set of txKey) lists places the user removed from the recap. `stamps` must already exclude hidden stamps. Returns null when there are no trips.
    */
   function computeRecap(persona, tx, o, stamps, title, tripId) {
     var trips = computeTrips(persona, tx, o);
@@ -210,6 +210,7 @@ var Rules = (function () {
     trips.forEach(function (t) { if (tripId && t.id === tripId) trip = t; });
     var ids = {};
     trip.tx.forEach(function (t) { ids[t.id] = 1; });
+    var hid = o.hiddenPlaces, shown = trip.tx.filter(function (t) { return !(hid && hid.has(txKey(persona, t))); });
     return {
       id: trip.id,
       count: trips.length,
@@ -218,9 +219,10 @@ var Rules = (function () {
       from: HOME.code,
       to: AIRPORT[trip.dest] || trip.dest.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase(),
       destCity: trip.dest,
-      dining: trip.tx.filter(function (t) { return t.cat === "dining"; }).length,
+      dining: shown.filter(function (t) { return t.cat === "dining"; }).length,
       stamps: stamps.filter(function (s) { return ids[s.tx]; }),
-      tx: trip.tx
+      tx: shown,        // what the recap and its share image show
+      allTx: trip.tx    // every place on the trip, so a hidden one can be shown again
     };
   }
 

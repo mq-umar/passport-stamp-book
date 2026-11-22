@@ -7,7 +7,7 @@
 
   function ctx() {
     var S = Store.get(), persona = PERSONAS[S.p];
-    var o = { types: S.types, refunded: S.refunded, disputed: S.disputed };
+    var o = { types: S.types, refunded: S.refunded, disputed: S.disputed, hiddenPlaces: S.hiddenPlaces };
     var all = Rules.computeStamps(S.p, persona.tx, o);
     var live = all.filter(function (s) { return !S.hidden.has(s.id); });
     var trips = Rules.computeTrips(S.p, persona.tx, o);
@@ -32,7 +32,8 @@
     else if (e.dataset.filter) sel = '[data-filter="' + e.dataset.filter + '"]';
     else if (e.dataset.trip) sel = '[data-trip="' + e.dataset.trip + '"]';
     else if (e.dataset.ob) sel = '[data-ob="' + e.dataset.ob + '"]';
-    if (!sel && (e.dataset.ref || e.dataset.dis)) return { attr: e.dataset.ref ? "ref" : "dis", val: e.dataset.ref || e.dataset.dis };
+    var ak = e.dataset.ref ? "ref" : e.dataset.dis ? "dis" : e.dataset.place ? "place" : "";
+    if (!sel && ak) return { attr: ak, val: e.dataset[ak] };
     return sel ? { sel: sel, s: e.selectionStart, e: e.selectionEnd } : null;
   }
 
@@ -106,6 +107,7 @@
       S.hidden.add(d.report); S.reported.push(d.report); S.sheet = null; focusMain = true;
       Store.log("stamp_reported", { id: d.report }); S.notice = "Thanks. That stamp is hidden and flagged for review."; render(); return;
     }
+    if (d.place) { toggle(S.hiddenPlaces, d.place); Store.log("place_hidden_from_recap", { hidden: S.hiddenPlaces.has(d.place) }); S.msg = ""; render(); return; }
     if (d.ref) { toggle(S.refunded, d.ref); Store.log("stamp_revoked", { reason: "refund", tx: d.ref }); render(); return; }
     if (d.dis) { toggle(S.disputed, d.dis); Store.log("stamp_revoked", { reason: "dispute", tx: d.dis }); render(); return; }
     if (t.id === "restore") { S.hidden.clear(); Store.log("stamp_restored"); render(); return; }

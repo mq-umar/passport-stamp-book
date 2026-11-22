@@ -2,6 +2,8 @@
 
 One line per improvement pass, newest first.
 
+- Pass 8: hide a place from a recap (PRD US7). Each place on the Trips tab has Hide/Show; hidden places leave the recap, meal count, share preview and share image, stay listed (struck through) so they can come back, persist across reloads and appear in the data export. +1 unit, +1 browser test; layout fix for 320 px.
+
 - Pass 7: users no longer see developer internals. The event log is gone from the UI (it stays in the data export); "Demo controls" became "Prototype tools", shown only at the bottom of Settings (collapsed, with a plain-language note), or on every tab with `?demo=1` for reviewers and tests. +1 browser test.
 
 - Pass 6: privacy centre. Settings gets "Export my data" (JSON: choices, hidden stamps, refunds, recap names; no amounts or merchants; works offline) and "Delete my data" (in-page two-step confirm, clears device and mock server via new `DELETE /api/prefs`, returns to setup). Codex review found and we fixed: delete being undone by a later sync (sync now skips unchanged prefs), failed deletes reported as success (`api()` now rejects non-OK), and out-of-order writes (prefs writes are serialised and delete waits for them). +1 server test, +3 browser tests.

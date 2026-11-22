@@ -438,3 +438,17 @@ test("computeGoals counts stamps by kind, caps progress and marks finished goals
   assert.equal(goals.cities5.have, 0);
   assert.ok(Rules.computeGoals([]).every((g) => !g.done && g.have === 0));
 });
+
+test("computeRecap leaves hidden places out of the recap but keeps them listed so they can be shown again", () => {
+  const tx = [
+    makeTx({ id: 1, d: "2026-10-09", m: "BBQ", cat: "dining", cuisine: "Barbecue" }),
+    makeTx({ id: 2, d: "2026-10-09", m: "Museum", cat: "culture" }),
+  ];
+  const o = makeOptions({ types: { dining: true, domestic: true } });
+  const all = Rules.computeRecap("p", tx, o, [], "", "");
+  assert.equal(all.tx.length, 2); assert.equal(all.dining, 1);
+  const hid = Rules.computeRecap("p", tx, { ...o, hiddenPlaces: new Set(["p:1"]) }, [], "", "");
+  assert.deepEqual(hid.tx.map((t) => t.m), ["Museum"]);
+  assert.equal(hid.dining, 0);
+  assert.equal(hid.allTx.length, 2);
+});

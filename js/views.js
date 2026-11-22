@@ -158,9 +158,11 @@ var Views = (function () {
       '<label class="check"><input type="checkbox" id="names" ' + (S.showNames ? "checked" : "") + '><span>Include restaurant names <small>(off by default)</small></span></label>' +
       '<div class="row" style="margin-top:12px"><button class="p" id="share">Share recap</button><button id="save">Save image</button></div>' +
       '<div role="status" aria-live="polite" id="msg" class="mute" style="margin-top:10px">' + esc(S.msg) + '</div></div>';
-    h += '<h2 class="sec">Places</h2>' + R.groupByDay(r.tx).map(function (d) {
+    h += '<h2 class="sec">Places</h2>' + R.groupByDay(r.allTx || r.tx).map(function (d) {
       return '<div class="day"><h3>' + esc(R.fdow(d.d)) + '</h3>' + d.items.map(function (t) {
-        return '<div class="place"><b>' + esc(t.m) + '</b><span>' + esc(t.city) + (t.cuisine ? " &middot; " + esc(t.cuisine) : "") + '</span></div>';
+        var K = R.txKey(S.p, t), gone = S.hiddenPlaces.has(K);
+        return '<div class="place' + (gone ? " gone" : "") + '"><div><b>' + esc(t.m) + '</b><span>' + esc(t.city) + (t.cuisine ? " &middot; " + esc(t.cuisine) : "") + '</span></div>' +
+          '<button class="link" ' + (S.offline ? "disabled" : "") + ' data-place="' + esc(K) + '" aria-pressed="' + gone + '" aria-label="' + (gone ? "Show " : "Hide ") + esc(t.m) + (gone ? " in the recap again" : " from the recap") + '">' + (gone ? "Show" : "Hide") + '</button></div>';
       }).join("") + '</div>';
     }).join("");
     if (c.trips.length > 1) h += tripPicker(c);

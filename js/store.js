@@ -8,7 +8,7 @@ var Store = (function () {
     return {
       token: null, live: false, cache: null, msg: "", p: "maya", tab: "passport",
       opened: false, onboarded: false, obStep: 0,
-      hidden: new Set(), refunded: new Set(), disputed: new Set(), seen: new Set(),
+      hidden: new Set(), hiddenPlaces: new Set(), refunded: new Set(), disputed: new Set(), seen: new Set(),
       types: { dining: false, domestic: false }, showNames: false, offline: false,
       events: [], title: {}, queue: [], notice: "", demoOpen: false, filter: "all", tripSel: "", q: "", reported: []
     };
@@ -16,7 +16,7 @@ var Store = (function () {
   var S = DEFAULTS();
   var STATIC_TX = {}; // the built-in transactions, restored on sign-out so live data never lingers
   Object.keys(PERSONAS).forEach(function (k) { STATIC_TX[k] = PERSONAS[k].tx; });
-  var SETS = ["hidden", "refunded", "disputed", "seen"];
+  var SETS = ["hidden", "hiddenPlaces", "refunded", "disputed", "seen"];
   var TRANSIENT = ["sheet", "msg", "notice", "q", "confirmDelete", "pmsg"]; // never persisted
   S.sheet = null;
 
@@ -127,7 +127,7 @@ var Store = (function () {
   function exportData() {
     return {
       exportedAt: new Date().toISOString(), persona: S.p,
-      stampTypes: S.types, hiddenStamps: Array.from(S.hidden), seenStamps: Array.from(S.seen), refundedPurchases: Array.from(S.refunded), disputedPurchases: Array.from(S.disputed),
+      stampTypes: S.types, hiddenStamps: Array.from(S.hidden), hiddenPlaces: Array.from(S.hiddenPlaces), seenStamps: Array.from(S.seen), refundedPurchases: Array.from(S.refunded), disputedPurchases: Array.from(S.disputed),
       recapNames: S.title, unsyncedRecapNames: S.queue.map(function (q) { return { trip: q.k || q.p, name: q.v }; }), showMerchantNamesInShares: S.showNames, reportedStamps: S.reported, activityLog: S.events
     };
   }
