@@ -6,7 +6,8 @@ import { fileURLToPath } from "node:url";
 import puppeteer from "puppeteer-core";
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-export const FILE_URL = "file:///" + path.join(ROOT, "index.html").replace(/\\/g, "/");
+export const PLAIN_URL = "file:///" + path.join(ROOT, "index.html").replace(/\\/g, "/");
+export const FILE_URL = PLAIN_URL + "?demo=1"; // the reviewer tools show on every tab
 
 const CANDIDATES = [
   process.env.CHROME_PATH,

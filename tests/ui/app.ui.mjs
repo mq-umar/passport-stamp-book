@@ -1,7 +1,7 @@
 // End-to-end behaviour of the front end, opened from file:// with built-in data.
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { launch, newPage, start, tab, stampLabels, openDemo, sleep, FILE_URL } from "./helpers.mjs";
+import { launch, newPage, start, tab, stampLabels, openDemo, sleep, FILE_URL, PLAIN_URL } from "./helpers.mjs";
 
 let browser;
 before(async () => { browser = await launch(); });
@@ -377,5 +377,20 @@ test("privacy centre: export contains no amounts or merchants; delete asks twice
   await page.waitForFunction(() => /was deleted/.test(document.querySelector(".note")?.textContent || ""), { timeout: 10000 });
   await tab(page, "passport");
   assert.match(await page.$eval("main", (e) => e.textContent), /Step 1 of 3/, "back to onboarding");
+  noErrors(page); await page.closeCtx();
+});
+
+test("users never see developer tools: no event log anywhere, prototype tools only in Settings", async () => {
+  const page = await newPage(browser);
+  await start(page, PLAIN_URL);
+  for (const t of ["passport", "trips"]) {
+    await tab(page, t);
+    assert.equal(await page.$("#demo"), null, t + " must not show prototype tools");
+    assert.doesNotMatch(await page.$eval("body", (e) => e.textContent), /Event log|stamp_viewed|persona_changed|"e":/);
+  }
+  await tab(page, "settings");
+  assert.match(await page.$eval("#demo summary", (e) => e.textContent), /Prototype tools/);
+  assert.equal(await page.$eval("#demo", (e) => e.open), false, "collapsed by default");
+  assert.doesNotMatch(await page.$eval("body", (e) => e.textContent), /Event log|"e":/);
   noErrors(page); await page.closeCtx();
 });

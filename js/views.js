@@ -188,15 +188,18 @@ var Views = (function () {
       '<div role="status" aria-live="polite" id="pmsg" class="mute" style="margin-top:10px">' + esc(S.pmsg || "") + '</div></section>';
   }
 
+  /** Reviewer tools live at the bottom of Settings; add ?demo=1 to the address to show them on every tab. */
+  function demoVisible(S) { return S.tab === "settings" || /[?&]demo(=|&|$)/.test(location.search); }
+
   function demo(c) {
     var S = c.S, off = S.offline ? "disabled" : "";
-    var h = '<details class="demo" id="demo" ' + (S.demoOpen ? "open" : "") + '><summary>Demo controls</summary><div class="body">' +
+    var h = '<details class="demo" id="demo" ' + (S.demoOpen ? "open" : "") + '><summary>Prototype tools</summary><div class="body"><p class="mute" style="margin:0 0 10px">For reviewers. Try another traveller, go offline, or pretend a purchase was refunded to see how Passport reacts. None of this is part of the real experience.</p>' +
       (Store.API ? '<div class="note" style="margin:0 0 8px">Live feed from mock backend ' + (S.live ? "connected" : "unavailable") + ' &middot; <button class="link" id="so">Sign out</button></div>' : "") +
-      '<label class="line">Persona <select id="pers" ' + off + '>' + Object.keys(PERSONAS).map(function (k) {
+      '<label class="line">Traveller <select id="pers" ' + off + '>' + Object.keys(PERSONAS).map(function (k) {
         return '<option value="' + k + '" ' + (k === S.p ? "selected" : "") + '>' + esc(PERSONAS[k].name) + '</option>';
       }).join("") + '</select></label>' +
       '<label class="line">Simulate offline <input type="checkbox" id="off" ' + (S.offline ? "checked" : "") + '></label>' +
-      '<h2 class="sec">Simulate card activity</h2>';
+      '<h2 class="sec">Pretend a purchase changed</h2>';
     h += c.persona.tx.map(function (t) {
       var K = R.txKey(S.p, t), bad = S.refunded.has(K) || S.disputed.has(K) || t.status !== "posted";
       var tag = S.refunded.has(K) ? '<span class="st bad">Refunded</span>' : S.disputed.has(K) ? '<span class="st bad">Disputed</span>' :
@@ -206,8 +209,7 @@ var Views = (function () {
         (t.status === "posted" ? '<div class="acts"><button ' + off + ' data-ref="' + esc(K) + '">' + (S.refunded.has(K) ? "Undo" : "Refund") + '</button><button ' + off +
           ' data-dis="' + esc(K) + '">' + (S.disputed.has(K) ? "Resolve" : "Dispute") + '</button></div>' : "") + '</div>';
     }).join("");
-    return h + '<h2 class="sec">Event log</h2><div class="log" tabindex="0" role="region" aria-label="Event log">' +
-      (S.events.slice(-12).map(function (e) { return esc(JSON.stringify(e)); }).join("<br>") || "none yet") + '</div></div></details>';
+    return h + '</div></details>';
   }
 
   function sheet(c) {
@@ -239,7 +241,7 @@ var Views = (function () {
     var S = c.S, body = S.tab === "passport" ? passport(c) : S.tab === "trips" ? trips(c) : settings(c);
     var inert = S.sheet ? ' inert' : '';
     return Art.DEFS + header(c).replace('<header class="top">', '<header class="top"' + inert + '>') + '<main tabindex="-1"' + inert + '>' + (S.notice ? '<div class="note">' + esc(S.notice) + '</div>' : "") + (S.offline ? '<div class="note">Offline: showing data cached ' + esc(S.cache ? S.cache.at : "") +
-      ' (UTC). Stamp changes are paused; recap name edits queue and sync when you reconnect.</div>' : "") + body + demo(c) +
+      ' (UTC). Stamp changes are paused; recap name edits queue and sync when you reconnect.</div>' : "") + body + (demoVisible(S) ? demo(c) : '') +
       '<p class="foot">Concept prototype &middot; fake data &middot; not affiliated with any card issuer</p></main>' + nav(c).replace('<nav aria-label="Main">', '<nav aria-label="Main"' + inert + '>') + sheet(c);
   }
 

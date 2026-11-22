@@ -12,7 +12,7 @@ before(async () => {
   browser = await launch();
   server = createServer();
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
-  base = `http://127.0.0.1:${server.address().port}/`;
+  base = `http://127.0.0.1:${server.address().port}/?demo=1`;
 });
 after(async () => { await browser.close(); await new Promise((r) => server.close(r)); });
 
