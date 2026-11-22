@@ -2,6 +2,8 @@
 
 One line per improvement pass, newest first.
 
+- Pass 12: calmer stamp grid. The "Hide" link under every stamp is gone; hiding lives in each stamp's detail sheet (where it already was), with the grid test updated to prove it. Restore stays on the page when anything is hidden.
+
 - Pass 11: ESLint (flat config, recommended rules, browser/service-worker/node globals) added and wired into `npm run test:all` and CI; fixed the three real findings (unused variable and import, undeclared test global). Lint is clean.
 
 - Pass 10: installable and offline. Web manifest, icon, service worker (caches only the static shell, never `/api`), Open Graph and theme-colour meta tags; the book opens offline after one visit (sign-in screen, since data needs the backend). +1 server test, +1 browser test.

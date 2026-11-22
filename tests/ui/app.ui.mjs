@@ -47,7 +47,9 @@ test("stamp rules: nothing before opt-in, pending/under-$5/null-cuisine never ea
 test("hide and restore; hidden stamps stay hidden when the list shifts", async () => {
   const page = await session();
   const before = (await stampLabels(page)).length;
-  await page.$$eval("ul.grid .stamp", (els) => els.find((e) => e.textContent.includes("Barbecue")).querySelector("[data-hide]").click());
+  assert.equal(await page.$("ul.grid [data-hide]"), null, "the grid stays uncluttered: hiding lives in the stamp sheet");
+  await page.$$eval("ul.grid .stamp", (els) => els.find((e) => e.textContent.includes("Barbecue")).querySelector("[data-open]").click());
+  await page.click(".sheet [data-hide]");
   assert.ok(!(await stampLabels(page)).includes("Barbecue"));
   await openDemo(page);
   await page.click('[data-ref="maya:1"]'); // shifts the list underneath
@@ -225,7 +227,7 @@ test("the stamp dialog is modal: background is inert and Tab cannot leave it", a
 
 test("hiding a stamp moves focus somewhere sensible instead of dropping it", async () => {
   const page = await session();
-  await page.click("[data-hide]");
+  await page.click(".stamp .hit"); await page.click(".sheet [data-hide]");
   assert.equal(await page.evaluate(() => document.activeElement.tagName), "MAIN");
   noErrors(page); await page.closeCtx();
 });
@@ -334,7 +336,7 @@ test("goals: progress follows visible stamps and hiding stamps un-completes a go
   assert.equal(before["Weekend roamer"].done, true, "Jordan has 3 states: " + JSON.stringify(before));
   assert.equal(before["Well fed"].done, true);
   assert.ok(await page.$(".goal.done .seal"), "a finished goal shows its seal");
-  while (await page.$(".stamp.k-state .hide")) await page.click(".stamp.k-state .hide");
+  while (await page.$(".stamp.k-state .hit")) { await page.click(".stamp.k-state .hit"); await page.click(".sheet [data-hide]"); }
   const after = await goals();
   assert.equal(after["Weekend roamer"].done, false);
   assert.match(after["Weekend roamer"].n, /^0 \/ 3$/);

@@ -5,8 +5,6 @@
 .stamp .hit { background: none; border: 0; padding: 0; min-height: 0; width: 100%; cursor: pointer; color: inherit; border-radius: 6px; position: relative; display: block; }
 .stamp .hit:hover:not(:disabled) { background: none; color: inherit; }
 .stamp .art { width: 100%; height: auto; display: block; transform: translate(var(--dx), var(--dy)) rotate(var(--r)); }
-.stamp .hide { border: 0; background: none; color: var(--mute); text-decoration: underline; font: 600 11px var(--mono); letter-spacing: .06em; min-height: 36px; padding: 2px 12px; font-weight: 600; }
-.stamp .hide:hover:not(:disabled) { background: none; color: var(--ink); }
 
 .k-city { --k: var(--ink-city); }
 .k-state { --k: var(--ink-state); }

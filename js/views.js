@@ -68,8 +68,7 @@ var Views = (function () {
     var S = c.S, j = Art.jitter(s.id), fresh = !S.seen.has(s.id);
     var name = R.displayName(s), label = R.KIND_LABEL[s.k] + " stamp, " + name + ", " + R.fd(s.sub);
     return '<li class="stamp k-' + s.k + (fresh ? " fresh" : "") + '" style="--r:' + j.r.toFixed(1) + 'deg;--dx:' + j.dx + 'px;--dy:' + j.dy + 'px">' +
-      '<button class="hit" data-open="' + esc(s.id) + '" aria-label="Open ' + esc(label) + '">' + Art.stampSVG(s, "g" + i) + '<b class="vh">' + esc(s.label) + '</b></button>' +
-      '<button class="hide" ' + (S.offline ? "disabled" : "") + ' data-hide="' + esc(s.id) + '" aria-label="Hide ' + esc(name) + ' stamp">Hide</button></li>';
+      '<button class="hit" data-open="' + esc(s.id) + '" aria-label="Open ' + esc(label) + '">' + Art.stampSVG(s, "g" + i) + '<b class="vh">' + esc(s.label) + '</b></button></li>';
   }
 
   function indexPages(c) {
