@@ -8,13 +8,13 @@ button, input, select { font: inherit; }
 /* ---------- the book ---------- */
 #app {
   max-width: 520px; min-height: 100vh; margin: 0 auto; display: flex; flex-direction: column;
-  background-color: var(--page); background-image: var(--lines);
+  background-color: var(--page); overflow-x: clip;
   border-left: 12px solid var(--cover); position: relative;
 }
 #app::before { /* stitched spine */
   content: ""; position: absolute; left: 0; top: 0; bottom: 0; border-left: 2px dashed var(--gold); opacity: .8; pointer-events: none;
 }
-@media (min-width: 600px) { body { padding: 28px 0 0; } #app { min-height: calc(100vh - 28px); border-right: 1px solid var(--rule); border-left-width: 22px; box-shadow: 8px 8px 0 rgba(0, 0, 0, .18); border-radius: 4px 6px 0 0; } }
+@media (min-width: 600px) { .cover { min-height: calc(100vh - 28px); } body { padding: 28px 0 0; } #app { min-height: calc(100vh - 28px); border-right: 1px solid var(--rule); border-left-width: 22px; box-shadow: 8px 8px 0 rgba(0, 0, 0, .18); border-radius: 4px 6px 0 0; } }
 
 .eyebrow { font: 600 11px/1.2 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--mute); }
 
@@ -27,13 +27,13 @@ button, input, select { font: inherit; }
 .cover::before { content: ""; position: absolute; inset: 26px; border: 1px dashed var(--gold); opacity: .45; pointer-events: none; }
 .cover .crest { width: 132px; height: 132px; margin-bottom: 26px; }
 .cover h1 {
-  font: 600 40px/1 var(--serif); letter-spacing: .28em; margin: 0 0 8px .28em; color: var(--gold);
+  font: 600 clamp(26px, 9vw, 40px)/1 var(--serif); letter-spacing: .22em; margin: 0 0 8px .22em; max-width: 100%; color: var(--gold);
   text-shadow: 0 1px 0 #3f1010, 0 -1px 0 #7d3a3a; /* embossed, hard shadows only */
 }
 .cover .sub { font: 500 12px/1.4 var(--mono); letter-spacing: .3em; text-transform: uppercase; opacity: .9; margin-bottom: 36px; }
 .cover button { color: var(--gold); border-color: var(--gold); background: transparent; letter-spacing: .12em; text-transform: uppercase; font-size: 13px; padding: 14px 28px; }
 .cover button:hover:not(:disabled) { background: var(--gold); color: var(--cover); }
-.cover .fine { position: absolute; bottom: 58px; left: 0; right: 0; font: 11px var(--mono); letter-spacing: .08em; opacity: .85; }
+.cover .fine { position: absolute; bottom: 56px; left: 48px; right: 48px; font: 11px/1.6 var(--mono); letter-spacing: .06em; opacity: .9; text-wrap: balance; }
 .cover :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 
 /* ---------- data page header ---------- */
@@ -95,9 +95,9 @@ input[type=checkbox]:disabled { opacity: .5; cursor: not-allowed; }
 .pass { position: relative; background: var(--paper); border: 1px solid var(--rule-strong); border-radius: var(--radius); margin: 0 0 18px; }
 .pass-main { padding: 18px 18px 16px; }
 .pass .lbl { font: 600 10px var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--mute); }
-.route { display: flex; align-items: center; gap: 12px; margin: 10px 0 2px; }
-.route .code { font: 700 46px/1 var(--serif); letter-spacing: .02em; }
-.route svg { flex: 1; height: 28px; color: var(--ink); min-width: 40px; }
+.route { display: flex; align-items: center; gap: 8px; margin: 10px 0 2px; }
+.route .code { font: 700 clamp(30px, 11vw, 46px)/1 var(--serif); letter-spacing: .02em; }
+.route svg { flex: 1; height: 28px; color: var(--ink); min-width: 20px; }
 .pass .places { font: 12px var(--mono); color: var(--mute); letter-spacing: .04em; }
 .pass h2 { font-size: 24px; line-height: 1.2; margin: 14px 0 12px; }
 .fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0; padding-top: 12px; border-top: 1px dashed var(--rule); }
@@ -173,7 +173,7 @@ input[type=checkbox]:disabled { opacity: .5; cursor: not-allowed; }
 .st.bad { color: var(--bad); }
 .st.ok { color: var(--ok); }
 .log { white-space: pre-wrap; word-break: break-all; font: 11px/1.6 var(--mono); max-height: 200px; overflow: auto; background: var(--paper); border: 1px solid var(--rule); padding: 10px; }
-.foot { font: 11px var(--mono); color: var(--mute); margin: 12px 0 0; letter-spacing: .04em; }
+.foot { font: 11px/1.6 var(--mono); color: var(--mute); margin: 14px 0 0; padding-bottom: 8px; letter-spacing: .04em; text-wrap: balance; }
 
 /* ---------- bottom navigation ---------- */
 nav { position: sticky; bottom: 0; display: flex; background: var(--page); border-top: 2px solid var(--rule-strong); padding-bottom: env(safe-area-inset-bottom, 0px); margin-top: auto; z-index: 5; }

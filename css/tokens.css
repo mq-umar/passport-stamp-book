@@ -30,7 +30,6 @@
   --track: #8d7f65;
   --knob: #fbf6ea;
 
-  --lines: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='30'><rect y='29' width='8' height='1' fill='%23d9cdb0'/></svg>");
 
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -71,6 +70,5 @@
     --track: #8f8268;
     --knob: #e8dcc0;
 
-    --lines: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='30'><rect y='29' width='8' height='1' fill='%232b251d'/></svg>");
   }
 }

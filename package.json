@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test tests/unit/*.test.js server.test.js",
-    "test:ui": "node --test tests/ui/app.ui.mjs tests/ui/a11y.ui.mjs tests/ui/api.ui.mjs",
+    "test:ui": "node --test tests/ui/app.ui.mjs tests/ui/a11y.ui.mjs tests/ui/api.ui.mjs tests/ui/layout.ui.mjs",
     "test:all": "npm test && npm run test:ui"
   },
   "engines": {

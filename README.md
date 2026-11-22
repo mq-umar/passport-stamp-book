@@ -1,6 +1,6 @@
 # Passport stamp book
 
-**A product concept, built end to end:** a stamp-book for everyday trips and meals, styled as a physical passport. It started as a product requirements document and became a working prototype, with a mock backend and 57 automated tests.
+**A product concept, built end to end:** a stamp-book for everyday trips and meals, styled as a physical passport. It started as a product requirements document and became a working prototype, with a mock backend and 69 automated tests.
 
 > Independent portfolio concept. Fake data only. It is **not affiliated with, or endorsed by, any card issuer**, uses no issuer branding, and contains no real customer data.
 
@@ -48,9 +48,9 @@ On first open, tap the cover, walk through onboarding, then try **Demo controls 
 ## Tests
 
 ```bash
-npm test            # 34 unit + API tests (Node's built-in runner, no dependencies)
+npm test            # 34 unit + API tests (Node built-in runner, no dependencies)
 npm install         # once, for the browser tests
-npm run test:ui     # 23 browser tests (Puppeteer) incl. an axe-core accessibility audit
+npm run test:ui     # 35 browser tests (Puppeteer) incl. accessibility and layout audits
 ```
 
 | Suite | What it covers |
@@ -61,6 +61,7 @@ npm run test:ui     # 23 browser tests (Puppeteer) incl. an axe-core accessibili
 | `tests/ui/app.ui.mjs` | Onboarding, stamps, hide/restore, dialog behaviour, search, recap, privacy defaults, share and save, offline, corrupted saved state, focus handling, reduced motion |
 | `tests/ui/a11y.ui.mjs` | WCAG 2.0/2.1 A and AA on every screen, in light and night, at phone and desktop widths |
 | `tests/ui/api.ui.mjs` | The front end against the real mock backend |
+| `tests/ui/layout.ui.mjs` | Text fits: at 6 widths (320 to 1280px), in light and night, on every screen, nothing overflows the page, leaves its container or is clipped |
 
 Set `CHROME_PATH` if Chrome or Edge is not in a default location.
 

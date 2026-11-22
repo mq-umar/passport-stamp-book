@@ -1,5 +1,5 @@
 /* Stamps are ink pressed onto the page: no tile, no card, slightly crooked, overlapping. */
-.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 4px; padding: 8px 0 4px; list-style: none; margin: 0; }
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 4px; padding: 8px 8px 4px; list-style: none; margin: 0; }
 @media (min-width: 440px) { .grid { grid-template-columns: repeat(3, 1fr); } }
 .stamp { display: flex; flex-direction: column; align-items: center; position: relative; --r: 0deg; --dx: 0px; --dy: 0px; }
 .stamp .hit { background: none; border: 0; padding: 0; min-height: 0; width: 100%; cursor: pointer; color: inherit; border-radius: 6px; position: relative; display: block; }

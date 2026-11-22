@@ -33,7 +33,7 @@
   function render() {
     var S = Store.get();
     if (Store.API && !S.token) { app.innerHTML = Views.login(); return; }
-    if (!S.opened) { app.innerHTML = Views.cover(); var ob = document.getElementById("open"); if (ob) ob.focus({ preventScroll: true }); return; }
+    if (!S.opened) { app.innerHTML = Views.cover(); return; }
     var c = ctx(), fk = focusKey();
     app.innerHTML = Views.app(c);
     if (S.tab === "passport" && S.onboarded) c.visible.forEach(function (s) { S.seen.add(s.id); });

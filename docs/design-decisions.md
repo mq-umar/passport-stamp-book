@@ -28,6 +28,7 @@ Stamp-collecting is physical: ink, paper, a cover, a crooked impression. Most di
 - The stamp dialog is modal: the page behind it is `inert`, Tab is trapped, Escape closes, focus returns to the stamp that opened it.
 - Focus is preserved across re-renders and moved to the main region after a stamp is hidden.
 - `prefers-reduced-motion` removes the press animation. `prefers-color-scheme` switches the paper.
+- A layout audit (`tests/ui/layout.ui.mjs`) fails the build if any text overflows, is clipped or pokes out of its container at phone, tablet or desktop widths.
 - Tap targets are 44px or larger except small text links, which have 36px hit areas.
 
 ## Product rules (from the PRD)
