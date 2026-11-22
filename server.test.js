@@ -343,7 +343,7 @@ test("recap names are stored per trip (persona:date) and per persona, and nothin
   const stored = await request("/api/prefs", { headers });
   assert.equal(stored.body.title["jordan:2026-09-18"], "Austin");
 
-  for (const bad of [{ "nobody:2026-10-23": "x" }, { "jordan:20261023": "x" }, { "jordan:../x": "x" }, { "JORDAN": "x" }, { "jordan:2026-10-23:x": "x" }, { "jordan:2026-10-23": 5 }]) {
+  for (const bad of [{ "nobody:2026-10-23": "x" }, { "jordan:20261023": "x" }, { "jordan:2026-13-40": "x" }, { "jordan:2026-00-10": "x" }, { "jordan:bad": "x" }, { "jordan:../x": "x" }, { "JORDAN": "x" }, { "jordan:2026-10-23:x": "x" }, { "jordan:2026-10-23": 5 }]) {
     assert.equal((await put(bad)).response.status, 400, JSON.stringify(bad));
   }
 });

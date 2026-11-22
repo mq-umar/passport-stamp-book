@@ -11,12 +11,13 @@
     var all = Rules.computeStamps(S.p, persona.tx, o);
     var live = all.filter(function (s) { return !S.hidden.has(s.id); });
     var trips = Rules.computeTrips(S.p, persona.tx, o);
-    var selId = trips.length ? trips[trips.length - 1].id : "";
-    trips.forEach(function (t) { if (t.id === S.tripSel) selId = t.id; });
+    var latest = trips.length ? trips[trips.length - 1] : null;
+    var found = Rules.findTrip(trips, S.tripSel), sel = found || latest;
+    var selId = sel ? sel.id : "";
     var titleKey = S.p + ":" + selId;
-    var liveRecap = Rules.computeRecap(S.p, persona.tx, o, live, S.title[titleKey], selId);
+    var liveRecap = Rules.computeRecap(S.p, persona.tx, o, live, sel ? Rules.titleFor(S.title, S.p, sel, sel === latest) : "", selId);
     var cached = S.offline && S.cache;
-    return { S: S, persona: persona, all: all, live: live, liveRecap: liveRecap, trips: trips, selId: selId, titleKey: titleKey,
+    return { S: S, persona: persona, all: all, live: live, liveRecap: liveRecap, trips: trips, latest: latest, found: found, selId: selId, titleKey: titleKey,
       visible: cached ? S.cache.v : live, recap: cached ? S.cache.r : liveRecap };
   }
 
@@ -29,6 +30,7 @@
     else if (e.dataset.type) sel = '[data-type="' + e.dataset.type + '"]';
     else if (e.dataset.tab) sel = '[data-tab="' + e.dataset.tab + '"]';
     else if (e.dataset.filter) sel = '[data-filter="' + e.dataset.filter + '"]';
+    else if (e.dataset.trip) sel = '[data-trip="' + e.dataset.trip + '"]';
     else if (e.dataset.ob) sel = '[data-ob="' + e.dataset.ob + '"]';
     if (!sel && (e.dataset.ref || e.dataset.dis)) return { attr: e.dataset.ref ? "ref" : "dis", val: e.dataset.ref || e.dataset.dis };
     return sel ? { sel: sel, s: e.selectionStart, e: e.selectionEnd } : null;
@@ -39,6 +41,8 @@
     if (Store.API && !S.token) { app.innerHTML = Views.login(); return; }
     if (!S.opened) { app.innerHTML = Views.cover(); return; }
     var c = ctx(), fk = focusKey();
+    if (S.tripSel && !c.found) { S.tripSel = ""; S.notice = "That trip changed, so the latest trip is shown."; }
+    else if (c.found && c.found.id !== S.tripSel) S.tripSel = c.found.id; // the trip moved a little; keep following it
     app.innerHTML = Views.app(c);
     if (S.tab === "passport" && S.onboarded) c.visible.forEach(function (s) { S.seen.add(s.id); });
     Store.save();

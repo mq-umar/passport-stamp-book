@@ -240,7 +240,7 @@ test("several trips: latest by default, past trips can be opened, and each keeps
   const rows = await page.$$eval(".trip-row", (els) => els.map((e) => e.textContent));
   assert.equal(rows.length, 3);
   assert.match(rows[0], /Seattle/); assert.match(rows[2], /Denver/);
-  assert.equal(await page.$eval(".trip-row[aria-pressed=true]", (e) => e.textContent.includes("Seattle")), true);
+  assert.equal(await page.$eval(".trip-row[aria-current=true]", (e) => e.textContent.includes("Seattle")), true);
 
   await page.click('[data-trip="2026-08-14"]');
   assert.match(await page.$eval(".pass", (e) => e.textContent), /Trip to Denver/);
@@ -262,5 +262,63 @@ test("a single-trip persona has no trip list", async () => {
   const page = await session();
   await tab(page, "trips");
   assert.equal(await page.$(".tripbook"), null);
+  noErrors(page); await page.closeCtx();
+});
+
+test("picking a trip keeps keyboard focus on that row", async () => {
+  const page = await session();
+  await openDemo(page);
+  await page.select("#pers", "jordan");
+  await tab(page, "trips");
+  await page.click('[data-trip="2026-09-18"]');
+  assert.equal(await page.evaluate(() => document.activeElement.dataset.trip), "2026-09-18");
+  noErrors(page); await page.closeCtx();
+});
+
+test("a selected trip that disappears falls back to the latest with an explanation; names follow a moved start date", async () => {
+  const page = await session();
+  await openDemo(page);
+  await page.select("#pers", "jordan");
+  await tab(page, "trips");
+  await page.click('[data-trip="2026-08-14"]');
+  await page.$eval("#rn", (e) => (e.value = "Rockies road trip"));
+  await page.click("#rnb");
+  // refund the Aug 14 purchase: the trip now starts on Aug 15, but keeps its name
+  await openDemo(page);
+  await page.click('[data-ref="jordan:1"]');
+  assert.match(await page.$eval(".tripbook", (e) => e.textContent), /Rockies road trip/);
+  // refund every Denver purchase: the trip vanishes and the latest is shown with a note
+  await page.click('[data-ref="jordan:2"]');
+  await page.click('[data-ref="jordan:3"]');
+  assert.match(await page.$eval(".pass", (e) => e.textContent), /Trip to Seattle/);
+  assert.match(await page.$eval("main", (e) => e.textContent), /That trip changed/);
+  noErrors(page); await page.closeCtx();
+});
+
+test("offline: trip switching is paused with a note, and a queued per-trip rename syncs to that trip", async () => {
+  const page = await session();
+  await openDemo(page);
+  await page.select("#pers", "jordan");
+  await tab(page, "trips");
+  await page.click('[data-trip="2026-09-18"]');
+  await openDemo(page);
+  await page.click("#off");
+  assert.match(await page.$eval("main", (e) => e.textContent), /Switching trips is paused while offline/);
+  assert.ok(await page.$eval("[data-trip]", (e) => e.disabled));
+  await page.$eval("#rn", (e) => (e.value = "Austin weekend"));
+  await page.click("#rnb");
+  await page.click("#off");
+  assert.match(await page.$eval(".tripbook", (e) => e.textContent), /Austin weekend/);
+  await page.click('[data-trip="2026-10-23"]');
+  assert.match(await page.$eval(".pass", (e) => e.textContent), /Trip to Seattle/, "the rename landed on Austin only");
+  noErrors(page); await page.closeCtx();
+});
+
+test("a name saved by the previous version (keyed by persona) still shows on the latest trip", async () => {
+  const page = await session();
+  await page.evaluate(() => { const j = JSON.parse(localStorage.getItem("passport-proto-v2")); j.title = { maya: "Legacy weekend" }; localStorage.setItem("passport-proto-v2", JSON.stringify(j)); });
+  await page.reload();
+  await tab(page, "trips");
+  assert.match(await page.$eval(".pass", (e) => e.textContent), /Legacy weekend/);
   noErrors(page); await page.closeCtx();
 });

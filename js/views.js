@@ -117,19 +117,20 @@ var Views = (function () {
   /** Every trip, newest first. Picking one shows its recap above. */
   function tripPicker(c) {
     var S = c.S, off = S.offline ? "disabled" : "";
-    return '<h2 class="sec">All trips</h2><ul class="tripbook">' + c.trips.slice().reverse().map(function (t) {
+    return '<h2 class="sec">All trips</h2>' + (S.offline ? '<p class="count">Switching trips is paused while offline.</p>' : "") + '<ul class="tripbook">' + c.trips.slice().reverse().map(function (t) {
       var ids = {}; t.tx.forEach(function (x) { ids[x.id] = 1; });
       var n = c.live.filter(function (s) { return ids[s.tx]; }).length;
-      var name = S.title[S.p + ":" + t.id] || R.tripTitle(t), on = t.id === c.selId;
-      return '<li><button class="trip-row" ' + off + ' data-trip="' + esc(t.id) + '" aria-pressed="' + on + '"><span><b>' + esc(name) + '</b><small>' + esc(R.fr(t.start, t.end)) +
-        '</small></span><span class="n">' + n + (n === 1 ? " stamp" : " stamps") + '</span></button></li>';
+      var on = t.id === c.selId;
+      var name = on && c.recap ? c.recap.title : (R.titleFor(S.title, S.p, t, t === c.latest) || R.tripTitle(t));
+      return '<li><button class="trip-row" ' + off + ' data-trip="' + esc(t.id) + '" ' + (on ? 'aria-current="true"' : "") + '><span><b>' + esc(name) + '</b><small>' + esc(R.fr(t.start, t.end)) +
+        '</small></span><span class="n"><span class="vh">, </span>' + n + (n === 1 ? " stamp" : " stamps") + '</span></button></li>';
     }).join("") + '</ul>';
   }
 
   function trips(c) {
     var S = c.S, r = c.recap, h = "";
     if (!r) return '<div class="panel empty"><b>No trips yet</b>A trip appears when you spend far from home.</div>';
-    var queued = S.queue.filter(function (q) { return q.k === c.titleKey; }).pop();
+    var queued = S.queue.filter(function (q) { return (q.k || q.p) === c.titleKey || (!q.k && q.p === S.p && c.selId === (c.latest && c.latest.id)); }).pop();
     h += pass(c, r);
     h += '<div class="panel"><label class="field" for="rn">Recap name</label><div class="row"><input id="rn" value="' + esc(queued ? queued.v : r.title) + '"><button id="rnb">Save name</button></div>' +
       (S.queue.length ? '<div class="note" style="margin:10px 0 0">' + S.queue.length + ' edit(s) queued, will sync when you reconnect.</div>' : "") +

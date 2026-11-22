@@ -389,3 +389,39 @@ test("daysBetween is exact across month ends and daylight-saving changes", () =>
   assert.equal(Rules.daysBetween("2026-11-01", "2026-11-03"), 2); // and on Nov 1
   assert.equal(Rules.daysBetween("2026-10-09", "2026-10-09"), 0);
 });
+
+test("a trip that spans a month end and a year end stays one trip", () => {
+  const tx = [
+    makeTx({ id: 1, d: "2026-12-30", city: "Denver", st: "CO", miles: 900 }),
+    makeTx({ id: 2, d: "2027-01-01", city: "Denver", st: "CO", miles: 900 }),
+  ];
+  const trips = Rules.computeTrips("maya", tx, makeOptions());
+  assert.equal(trips.length, 1);
+  assert.equal(Rules.fr("2026-12-30", "2027-01-01"), "Dec 30 \u2013 Jan 1, 2026");
+});
+
+test("titleFor: exact key, a date inside the trip, legacy persona key for the latest trip only", () => {
+  const trip = { id: "2026-08-15", start: "2026-08-15", end: "2026-08-16", dest: "Denver", tx: [] };
+  assert.equal(Rules.titleFor({ "jordan:2026-08-15": "Rockies" }, "jordan", trip, false), "Rockies");
+  // the trip's first purchase was refunded, so it now starts a day later than when it was named
+  assert.equal(Rules.titleFor({ "jordan:2026-08-14": "Rockies" }, "jordan", { ...trip, start: "2026-08-14" }, false), "Rockies");
+  // the trip now starts a day later than when it was named: still the same trip
+  assert.equal(Rules.titleFor({ "jordan:2026-08-14": "Rockies" }, "jordan", trip, false), "Rockies");
+  assert.equal(Rules.titleFor({ "jordan:2026-08-10": "Older trip" }, "jordan", trip, false), "", "a name from a different, earlier trip does not apply");
+  assert.equal(Rules.titleFor({ jordan: "Legacy name" }, "jordan", trip, true), "Legacy name");
+  assert.equal(Rules.titleFor({ jordan: "Legacy name" }, "jordan", trip, false), "");
+  assert.equal(Rules.titleFor({ "daniel:2026-08-15": "Not mine" }, "jordan", trip, true), "", "other personas never leak");
+});
+
+test("findTrip follows a trip whose start moved later, and returns null once it is gone", () => {
+  const trips = [
+    { id: "2026-08-15", start: "2026-08-15", end: "2026-08-16", dest: "Denver", tx: [] },
+    { id: "2026-09-18", start: "2026-09-18", end: "2026-09-20", dest: "Austin", tx: [] },
+  ];
+  assert.equal(Rules.findTrip(trips, "2026-09-18").dest, "Austin");
+  assert.equal(Rules.findTrip(trips, "2026-08-14").dest, "Denver", "saved before the first purchase was refunded");
+  assert.equal(Rules.findTrip(trips, "2026-09-19").dest, "Austin", "a date inside the trip");
+  assert.equal(Rules.findTrip(trips, "2026-08-01"), null);
+  assert.equal(Rules.findTrip(trips, ""), null);
+  assert.equal(Rules.findTrip([], "2026-08-14"), null);
+});

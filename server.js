@@ -106,7 +106,7 @@ function validPrefs(value) {
     // keys are "persona" or "persona:YYYY-MM-DD" (one recap name per trip)
     if (!isPlainObject(value.title) || Object.keys(value.title).length > 200) return false;
     for (const [key, title] of Object.entries(value.title)) {
-      const parts = /^([a-z]+)(?::\d{4}-\d{2}-\d{2})?$/.exec(key);
+      const parts = /^([a-z]+)(?::\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01]))?$/.exec(key);
       if (!parts || !Object.hasOwn(DATA, parts[1]) || typeof title !== "string" || title.length > 200) return false;
     }
   }

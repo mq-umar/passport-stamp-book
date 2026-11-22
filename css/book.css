@@ -130,7 +130,7 @@ input[type=checkbox]:disabled { opacity: .5; cursor: not-allowed; }
 .trip-row b { display: block; font: 600 17px var(--serif); }
 .trip-row small { font: 12px var(--mono); }
 .trip-row .n { font: 600 12px var(--mono); color: var(--mute); white-space: nowrap; }
-.trip-row[aria-pressed=true] { box-shadow: inset 4px 0 0 var(--accent); background: var(--page-2); }
+.trip-row[aria-current=true] { box-shadow: inset 4px 0 0 var(--accent); background: var(--page-2); }
 .trip-row:hover:not(:disabled) { background: var(--page-2); color: var(--ink); }
 
 /* ---------- index pages ---------- */

@@ -147,7 +147,37 @@ var Rules = (function () {
     return trips;
   }
 
+  /** True when a date saved against a trip still belongs to it, even if a refund moved the trip's start a little later. */
+  function sameTrip(date, trip) { return date <= trip.end && daysBetween(date, trip.start) <= MAX_TRIP_GAP_DAYS; }
+
+  /** The trip a saved trip id refers to, or null if that trip no longer exists. */
+  function findTrip(trips, id) {
+    if (!id) return null;
+    var hit = null;
+    trips.forEach(function (t) { if (t.id === id) hit = t; });
+    trips.forEach(function (t) { if (!hit && sameTrip(id, t)) hit = t; });
+    return hit;
+  }
+
   function tripTitle(trip) { return "Trip to " + trip.dest; }
+
+  /**
+   * The saved recap name for a trip, or "". Names are stored under "persona:firstDate". If a refund moved the
+   * trip's first date later, a name saved under the old date still applies. Names saved by older versions
+   * under just "persona" belong to the latest trip.
+   */
+  function titleFor(titles, persona, trip, isLatest) {
+    var exact = titles[persona + ":" + trip.id];
+    if (exact) return exact;
+    var found = "";
+    Object.keys(titles).forEach(function (k) {
+      if (k.indexOf(persona + ":") !== 0) return;
+      var d = k.slice(persona.length + 1);
+      if (sameTrip(d, trip)) found = titles[k]; // saved before a refund moved the start date later
+    });
+    if (found) return found;
+    return isLatest && titles[persona] ? titles[persona] : "";
+  }
 
   /**
    * Recap of one trip: the latest unless `tripId` names another.
@@ -189,7 +219,7 @@ var Rules = (function () {
     KIND_LABEL: KIND_LABEL, KIND_VERB: KIND_VERB, STATES: STATES, STATE_NAMES: STATE_NAMES, CUISINES: CUISINES,
     fd: fd, fdow: fdow, fr: fr, monoOf: monoOf, displayName: displayName, hash: hash, txKey: txKey,
     validTx: validTx, computeStamps: computeStamps, stampTrail: stampTrail, computeRecap: computeRecap,
-    computeTrips: computeTrips, tripTitle: tripTitle, daysBetween: daysBetween, MAX_TRIP_GAP_DAYS: MAX_TRIP_GAP_DAYS,
+    computeTrips: computeTrips, tripTitle: tripTitle, titleFor: titleFor, findTrip: findTrip, daysBetween: daysBetween, MAX_TRIP_GAP_DAYS: MAX_TRIP_GAP_DAYS,
     groupByDay: groupByDay
   };
 })();
