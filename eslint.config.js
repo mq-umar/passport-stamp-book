@@ -12,5 +12,5 @@ module.exports = [
     rules: { "no-redeclare": ["error", { builtinGlobals: false }], "no-unused-vars": ["error", { vars: "local", caughtErrors: "none" }] } },
   { files: ["sw.js"], languageOptions: { sourceType: "script", globals: globals.serviceworker } },
   { files: ["server.js", "server.test.js", "eslint.config.js", "tests/unit/*.js"], languageOptions: { sourceType: "commonjs", globals: globals.node } },
-  { files: ["tests/ui/*.mjs"], languageOptions: { sourceType: "module", globals: { ...globals.node, ...globals.browser } } },
+  { files: ["tests/ui/*.mjs", "scripts/*.mjs"], languageOptions: { sourceType: "module", globals: { ...globals.node, ...globals.browser } } },
 ];

@@ -10,7 +10,8 @@
     "test:ui": "node --test tests/ui/app.ui.mjs tests/ui/a11y.ui.mjs tests/ui/api.ui.mjs",
     "test:all": "npm run lint && npm test && npm run test:ui && npm run test:layout",
     "test:layout": "node --test tests/ui/layout.ui.mjs",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "screenshots": "node scripts/screenshots.mjs"
   },
   "engines": {
     "node": ">=18"

@@ -1,6 +1,6 @@
 # Passport stamp book
 
-**A product concept, built end to end:** a stamp-book for everyday trips and meals, styled as a physical passport. It started as a product requirements document and became a working prototype, with a mock backend and 76 automated tests.
+**A product concept, built end to end:** a stamp-book for everyday trips and meals, styled as a physical passport. It started as a product requirements document and became a working prototype, with a mock backend and 100 automated tests plus a lint check.
 
 > Independent portfolio concept. Fake data only. It is **not affiliated with, or endorsed by, any card issuer**, uses no issuer branding, and contains no real customer data.
 
@@ -29,7 +29,12 @@ Digital travel stamps exist, but they reward only international trips. People wh
 - **Offline mode**: cached snapshot, paused changes, queued edits that sync on reconnect, all surviving a reload.
 - **Mock backend**: sign-in, a transaction feed per persona and server-side preferences.
 - **Night mode**, reduced-motion support, keyboard and screen-reader support.
-- **Demo controls** (bottom of each screen): switch between four personas, go offline, refund or dispute a purchase and watch the stamps react.
+- **Collection goals** (3 and 5 states, 5 cities, 5 cuisines, first country) with progress bars and a seal when finished.
+- **Privacy centre**: export your data (no amounts, no merchant names) or delete it, with a two-step confirmation.
+- **Notification preferences** with previews of the exact message. Off until chosen. The prototype sends nothing.
+- **Hide a place from a recap**; it also leaves the share image.
+- **Installable and offline**: web manifest and a service worker that caches only the static shell, never the API.
+- **Prototype tools** (bottom of Settings, collapsed; add `?demo=1` to the address to show them on every tab): switch between four travellers, go offline, refund or dispute a purchase and watch the stamps react.
 
 ## Run it
 
@@ -43,15 +48,17 @@ npm start                       # http://localhost:3000
 HOST=0.0.0.0 npm start          # to try it from your phone on the same Wi-Fi
 ```
 
-On first open, tap the cover, walk through onboarding, then try **Demo controls → Simulate card activity**.
+On first open, tap the cover, walk through onboarding, then open **Settings → Prototype tools → Pretend a purchase changed**.
 
 ## Tests
 
 ```bash
-npm test            # 39 unit + API tests (Node built-in runner, no dependencies)
+npm test            # unit + API tests (Node built-in runner, no dependencies)
+npm run lint        # ESLint
 npm install         # once, for the browser tests
 npm run test:ui     # browser tests (Puppeteer) incl. an axe accessibility audit
 npm run test:layout # text-fit audit at six widths, light and night
+npm run screenshots # regenerate the images in docs/
 ```
 
 | Suite | What it covers |
@@ -69,19 +76,51 @@ Set `CHROME_PATH` if Chrome or Edge is not in a default location.
 ## How it is built
 
 ```
-index.html            shell
+index.html            shell (carries the Content-Security-Policy)
+sw.js, manifest.webmanifest, icon.svg   offline support and install
 css/                  tokens (palette, type), book (layout, cover, ticket), stamps
 js/rules.js           pure product rules; also loaded by Node for unit tests
 js/stamps-art.js      SVG stamps, crest, barcode; canvas share image
 js/store.js           state, localStorage, API sync
 js/views.js           render functions (every dynamic value is escaped)
 js/main.js            boot and event handling
+js/config.js          deployment switch (static mode for hosts with no backend)
+js/boot.js            service worker registration
 server.js             zero-dependency mock API (sessions, validation, limits)
 tests/                unit and browser tests
 docs/                 PRD, design decisions, screenshots
 ```
 
 Vanilla JavaScript with classic scripts, so it also works from `file://`. No framework, no bundler, no runtime dependencies.
+
+## Live demo and deployment
+
+A static copy of the app (built-in fake data, no sign-in, no backend) can be published with GitHub Pages: `.github/workflows/pages.yml` lints, tests and publishes only the front-end files, and switches `js/config.js` to static mode. In the repository settings choose **Pages → Source: GitHub Actions**. The mock backend (`npm start`) is for local use only and is not deployed.
+
+## Security and transparency
+
+What is in place:
+- **No runtime dependencies** and `npm audit` reports 0 vulnerabilities. The only dev dependencies are ESLint, Puppeteer and axe-core.
+- **Strict Content-Security-Policy** (no inline scripts, no `eval`, no remote origins, no plugins, framing denied) sent as a header by the server and also embedded in the page for static hosts. A browser test proves an injected script and an injected inline event handler do not run.
+- Every dynamic value is HTML-escaped before it reaches the page; saved browser state is type-checked on load.
+- The server sends `nosniff`, `no-referrer`, `X-Frame-Options: DENY`, `Permissions-Policy` and `COOP` on every response, serves only an allowlist of static files (path traversal is tested), caps request sizes and sessions, compares credentials in constant time, and listens on localhost unless you set `HOST`.
+- The service worker never caches `/api` and only deletes its own caches.
+- Shared recap images and data exports never contain amounts or card details; restaurant names are opt-in.
+- No secrets, API keys, personal data or real customer data are in the repository. All data is fake.
+
+What is not, stated plainly:
+- **The backend is a mock.** One public demo login (`demo` / `demo`), in-memory sessions, no rate limiting on sign-in, no HTTPS. Do not expose it to the internet or put real data in it. Setting `HOST=0.0.0.0` makes it reachable by anyone on your network.
+- The sign-in token is kept in `localStorage`, so a successful script injection (which the CSP is there to prevent) could read it. A real product would use an HttpOnly cookie.
+- The CSP allows inline *styles* (the views set a few style attributes). Scripts are strictly self-only.
+- The Pages workflow uses GitHub's own actions pinned to major versions, not to commit hashes.
+- Not tested on a real phone or with a real screen reader (see Known limits). Automated checks cover part of accessibility only.
+- A security review by an independent AI tool (OpenAI Codex) was run on the code before publishing; its findings and what was done about them are in [docs/SECURITY-REVIEW.md](docs/SECURITY-REVIEW.md). That is not a substitute for a human audit.
+
+To report a problem, open an issue (this is a portfolio prototype, with no bounty or SLA).
+
+## How this was made
+
+Built by the repository owner working with AI coding tools: Claude Code wrote and revised most of the code and tests, and OpenAI Codex was used as a second reviewer. Commits made with Claude carry a `Co-Authored-By` line. The product thinking in [docs/PRD.md](docs/PRD.md) is the owner's; every number in it that is not cited is marked as an assumption.
 
 ## Design
 
@@ -92,6 +131,8 @@ The app is a passport book rather than a dashboard: cover, ruled pages, ink-bled
 - **Not tested on a real phone or with a real screen reader.** The share sheet path is covered by a mocked test, and accessibility by automated audits, which catch only part of the problems.
 - The backend is a mock: one demo login, in-memory sessions, fake data. A real build would use real authentication, a card-transaction feed and rate limiting.
 - Trip detection is a simple rule (a gap of more than two days between away-from-home purchases). It does not yet merge multi-city itineraries or use destination changes.
+- Notification settings are saved on the device only and no notification is ever sent.
+- There is no share image for a single stamp yet (see the roadmap).
 - Stamps are app-only. The PRD discusses, and defers, putting any stamp on a blockchain.
 
 ## License
