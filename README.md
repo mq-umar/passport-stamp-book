@@ -1,6 +1,6 @@
 # Passport stamp book
 
-**A product concept, built end to end:** a stamp-book for everyday trips and meals, styled as a physical passport. It started as a product requirements document and became a working prototype, with a mock backend and 101 automated tests plus a lint check.
+**A product concept, built end to end:** a stamp-book for everyday trips and meals, styled as a physical passport. It started as a product requirements document and became a working prototype, with a mock backend and 104 automated tests plus a lint check.
 
 > Independent portfolio concept. Fake data only. It is **not affiliated with, or endorsed by, any card issuer**, uses no issuer branding, and contains no real customer data.
 
@@ -123,7 +123,7 @@ What is not, stated plainly:
 - The CSP allows inline *styles* (the views set a few style attributes). Scripts are strictly self-only.
 - The Pages workflow uses GitHub's own actions pinned to major versions, not to commit hashes.
 - Not tested on a real phone or with a real screen reader (see Known limits). Automated checks cover part of accessibility only.
-- This is a self-review, not an independent audit: what was checked, how, and the known weaknesses are in [docs/SECURITY-REVIEW.md](docs/SECURITY-REVIEW.md). An AI security run (OpenAI Codex) was started but did not finish, so it is not claimed.
+- This is a self-review plus a scoped AI review (OpenAI Codex), not an independent human audit. What was checked, the three Low findings and what was done about each, and the known weaknesses are in [docs/SECURITY-REVIEW.md](docs/SECURITY-REVIEW.md). One finding is deliberately left: the GitHub Pages copy cannot send anti-framing headers, so use the Vercel deployment as the public link.
 
 To report a problem, open an issue (this is a portfolio prototype, with no bounty or SLA).
 

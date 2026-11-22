@@ -148,6 +148,7 @@ var Store = (function () {
 
   function signOut() {
     clearTimeout(syncTimer); lastSynced = null;
+    if (API && S.token) fetch("/api/session", { method: "DELETE", headers: { authorization: "Bearer " + S.token } }).catch(function () { /* the token also expires on its own */ });
     Object.keys(STATIC_TX).forEach(function (k) { PERSONAS[k].tx = STATIC_TX[k]; });
     try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
     var d = DEFAULTS(); d.opened = S.opened; S = d; S.sheet = null;

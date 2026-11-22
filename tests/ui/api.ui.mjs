@@ -146,3 +146,18 @@ test("content security policy blocks an injected inline script and inline event 
   assert.equal(await page.evaluate(() => window.__pwned), 0, "neither the script nor the handler may run");
   await page.closeCtx();
 });
+
+test("signing out revokes the session on the server, so a copied token stops working", async () => {
+  const page = await newPage(browser);
+  await login(page);
+  await page.click("#open"); await openDemo(page); // a render saves the token to local storage
+  const token = await page.evaluate(() => JSON.parse(localStorage.getItem("passport-proto-v2")).token);
+  const status = () => page.evaluate(async (t) => (await fetch("/api/prefs", { headers: { authorization: "Bearer " + t } })).status, token);
+  assert.equal(await status(), 200);
+  await page.click("#so");
+  await page.waitForFunction(() => /Sign in/.test(document.getElementById("app").textContent), { timeout: 10000 });
+  await sleep(500);
+  assert.equal(await status(), 401, "the old token no longer works");
+  assert.deepEqual(page.errors.filter((e) => !/status of 40[01]/.test(e)), []);
+  await page.closeCtx();
+});

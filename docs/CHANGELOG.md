@@ -2,6 +2,8 @@
 
 One line per improvement pass, newest first.
 
+- Pass 16: scoped security review fixes. Sign-out now revokes the session on the server (`DELETE /api/session`) so a copied token dies immediately; commit history rewritten to a GitHub no-reply email; security review document updated with the outcome of each finding. +1 server test, +1 browser test.
+
 - Pass 15: security hardening and deploy readiness. Strict CSP (header + meta), framing and permissions headers on every response, static mode (`js/config.js`) for hosts with no backend, `scripts/build-static.mjs` shared by Vercel (`vercel.json`, with the same headers) and the GitHub Pages workflow, screenshot script and refreshed screenshots, README security and transparency sections. +1 server test, +2 browser tests.
 
 - Pass 14: Codex final review fixes. The service worker only ever deletes its own `passport-shell-*` caches; the notification section says plainly that this prototype sends nothing; preview boxes are real labelled groups so screen readers announce them.

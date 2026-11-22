@@ -221,6 +221,7 @@ function createServer() {
       "/api/login": ["POST"],
       "/api/transactions": ["GET"],
       "/api/prefs": ["GET", "PUT", "DELETE"],
+      "/api/session": ["DELETE"],
     };
     if (Object.hasOwn(apiRoutes, pathname)) {
       const methods = apiRoutes[pathname];
@@ -244,7 +245,7 @@ function createServer() {
           return;
         }
         const token = crypto.randomBytes(32).toString("base64url");
-        sessions.set(token, { prefs: {}, lastUsed: Date.now() });
+        sessions.set(token, { token, prefs: {}, lastUsed: Date.now() });
         sendJson(res, 200, { token });
         return;
       }
@@ -252,6 +253,12 @@ function createServer() {
       const session = getSession(req);
       if (!session) {
         sendJson(res, 401, { error: "unauthorized" });
+        return;
+      }
+
+      if (pathname === "/api/session") { // sign out: the token stops working immediately, not after 12 hours
+        sessions.delete(session.token);
+        sendJson(res, 200, { ok: true });
         return;
       }
 

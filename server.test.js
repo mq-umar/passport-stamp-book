@@ -389,3 +389,16 @@ test("every response type carries the security headers, including errors", async
     assert.match(headers["permissions-policy"], /geolocation=\(\)/, p);
   }
 });
+
+test("DELETE /api/session revokes the token at once and leaves other sessions alone", async () => {
+  const a = await login(), b = await login();
+  const ha = { authorization: `Bearer ${a.body.token}` }, hb = { authorization: `Bearer ${b.body.token}` };
+  assert.equal((await request("/api/prefs", { headers: ha })).response.status, 200);
+  assert.equal((await request("/api/session", { method: "DELETE" })).response.status, 401, "needs a session");
+  const out = await request("/api/session", { method: "DELETE", headers: ha });
+  assert.equal(out.response.status, 200);
+  assert.equal((await request("/api/prefs", { headers: ha })).response.status, 401, "the signed-out token is dead");
+  assert.equal((await request("/api/transactions?persona=maya", { headers: ha })).response.status, 401);
+  assert.equal((await request("/api/prefs", { headers: hb })).response.status, 200, "another session is unaffected");
+  assert.equal((await request("/api/session", { method: "GET", headers: hb })).response.status, 405);
+});

@@ -20,7 +20,17 @@ Run `npm run test:all` to repeat every check above.
 
 ## AI review
 
-OpenAI Codex was used as a second reviewer during development (privacy centre, notifications, service worker, grid changes). Its confirmed findings were fixed and are listed in `docs/CHANGELOG.md`. A final whole-repository **security-focused Codex run was started but did not return a report** before the time limit, so no claim of an independent AI security review is made here.
+OpenAI Codex was used as a second reviewer during development (privacy centre, notifications, service worker, grid changes); its confirmed findings were fixed and are listed in `docs/CHANGELOG.md`.
+
+Two security-focused runs were attempted before publishing. The first (whole repository) returned no report before its time limit. The second, scoped to `server.js`, `sw.js`, `index.html` and `js/store.js`, completed and reported **no path traversal, header injection, `/api` caching or exploitable localStorage issue**, plus three Low findings:
+
+| Finding | Outcome |
+|---|---|
+| Fixed `demo` / `demo` login lets anyone who can reach the server get a token | Not changed. Documented below; the server listens on localhost unless `HOST` is set |
+| Sign-out only cleared the browser token; a copied token stayed valid for up to 12 hours | **Fixed.** New `DELETE /api/session` revokes the session; sign-out calls it. Covered by a server test and a browser test |
+| The meta-tag CSP cannot enforce `frame-ancestors`, so a static host without headers allows framing | Vercel is covered (`vercel.json` sends the header and `X-Frame-Options`). **GitHub Pages cannot set headers, so the Pages demo can be embedded in another page.** Acceptable for a fake-data demo with no sign-in; use Vercel for the public link |
+
+This is still one AI reviewer reading the code, not a human audit.
 
 ## Known weaknesses (deliberately not fixed, because this is a mock)
 
@@ -32,4 +42,4 @@ OpenAI Codex was used as a second reviewer during development (privacy centre, n
 
 ## Open items for the owner
 
-- Every commit carries the author email set in git. Publishing the history publishes that address. Use a GitHub `noreply` address for future commits, and decide whether to rewrite history first.
+- Commit author emails were rewritten to `mq-umar@users.noreply.github.com` before publishing, so no personal address is in the history. If GitHub does not link those commits to your account, check **Settings → Emails** for your exact no-reply address (it may include a numeric ID) and set it with `git config user.email`.
