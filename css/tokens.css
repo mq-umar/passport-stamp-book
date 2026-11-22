@@ -1,0 +1,76 @@
+/* Design tokens. Light = cream page. Night = "night flight" navy-black page.
+   No gradients anywhere: flat fills, hairlines and SVG only. */
+:root {
+  --page: #f3ecdc;
+  --page-2: #e9dfc7;
+  --desk: #d3c5a8;
+  --paper: #fbf6ea;
+  --ink: #2a2118;
+  --mute: #6b5d48;
+  --rule: #cfc2a6;
+  --rule-strong: #2a2118;
+
+  --cover: #5b1a1a;
+  --cover-edge: #3f1010;
+  --gold: #e7c98a;
+
+  --accent: #6b1d1d;
+  --on-accent: #f3ecdc;
+  --focus: #1d2b4f;
+
+  --ink-city: #1d2b4f;
+  --ink-state: #2f5d3a;
+  --ink-dining: #7a2323;
+  --ink-intl: #8a5a12;
+
+  --note-bg: #efe0b0;
+  --note-ink: #4a3a00;
+  --bad: #a3261b;
+  --ok: #2f5d3a;
+  --track: #8d7f65;
+  --knob: #fbf6ea;
+
+  --lines: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='30'><rect y='29' width='8' height='1' fill='%23d9cdb0'/></svg>");
+
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+  --radius: 3px;
+  --space: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #1a1612;
+    --page-2: #14110e;
+    --desk: #0d0b09;
+    --paper: #231e18;
+    --ink: #e8dcc0;
+    --mute: #b5a78a;
+    --rule: #3a322a;
+    --rule-strong: #efe6d2;
+
+    --cover: #5a1a1a;
+    --cover-edge: #330c0c;
+    --gold: #e7c98a;
+
+    --accent: #e3a08f;
+    --on-accent: #1a1612;
+    --focus: #e8dcc0;
+
+    --ink-city: #93a9e6;
+    --ink-state: #7fb48a;
+    --ink-dining: #e58b78;
+    --ink-intl: #dcaa55;
+
+    --note-bg: #3b3212;
+    --note-ink: #f0dc9c;
+    --bad: #ff9a8f;
+    --ok: #86c196;
+    --track: #8f8268;
+    --knob: #e8dcc0;
+
+    --lines: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='30'><rect y='29' width='8' height='1' fill='%232b251d'/></svg>");
+  }
+}

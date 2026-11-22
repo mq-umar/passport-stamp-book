@@ -1,0 +1,231 @@
+// End-to-end behaviour of the front end, opened from file:// with built-in data.
+import { test, before, after } from "node:test";
+import assert from "node:assert/strict";
+import { launch, newPage, start, tab, stampLabels, openDemo, sleep, FILE_URL } from "./helpers.mjs";
+
+let browser;
+before(async () => { browser = await launch(); });
+after(async () => { await browser.close(); });
+
+async function session(opts, startOpts) {
+  const page = await newPage(browser, opts);
+  await start(page, FILE_URL, startOpts);
+  return page;
+}
+const noErrors = (page) => assert.deepEqual(page.errors, []);
+
+test("cover opens, onboarding walks three steps and stamps appear", async () => {
+  const page = await newPage(browser);
+  await page.goto(FILE_URL);
+  assert.ok(await page.$eval(".cover h1", (e) => e.textContent.includes("PASSPORT")));
+  await page.click("#open");
+  assert.match(await page.$eval("main", (e) => e.textContent), /Step 1 of 3/);
+  await page.click('[data-ob="1"]');
+  assert.match(await page.$eval("main", (e) => e.textContent), /No location tracking/);
+  await page.click('[data-ob="2"]');
+  await page.click("[data-type=domestic]");
+  assert.ok(await page.$("[data-ob-done]"), "onboarding must survive toggling a switch");
+  await page.click("[data-type=dining]");
+  await page.click("[data-ob-done]");
+  const labels = await stampLabels(page);
+  for (const l of ["Nashville", "TN", "Southern", "Barbecue", "American"]) assert.ok(labels.includes(l), l);
+  noErrors(page); await page.closeCtx();
+});
+
+test("stamp rules: nothing before opt-in, pending/under-$5/null-cuisine never earn", async () => {
+  const page = await newPage(browser);
+  await start(page, FILE_URL, { dining: false, domestic: false });
+  assert.equal((await stampLabels(page)).length, 0);
+  await openDemo(page);
+  await page.select("#pers", "daniel");
+  await tab(page, "settings"); await page.click("[data-type=dining]"); await tab(page, "passport");
+  const labels = await stampLabels(page);
+  assert.deepEqual(labels.sort(), ["Ethiopian", "Japanese"]);
+  noErrors(page); await page.closeCtx();
+});
+
+test("hide and restore; hidden stamps stay hidden when the list shifts", async () => {
+  const page = await session();
+  const before = (await stampLabels(page)).length;
+  await page.$$eval("ul.grid .stamp", (els) => els.find((e) => e.textContent.includes("Barbecue")).querySelector("[data-hide]").click());
+  assert.ok(!(await stampLabels(page)).includes("Barbecue"));
+  await openDemo(page);
+  await page.click('[data-ref="maya:1"]'); // shifts the list underneath
+  assert.ok(!(await stampLabels(page)).includes("Barbecue"));
+  await page.click('[data-ref="maya:1"]');
+  await page.click("#restore");
+  assert.equal((await stampLabels(page)).length, before);
+  noErrors(page); await page.closeCtx();
+});
+
+test("stamp detail sheet: trail, focus management, Escape, report", async () => {
+  const page = await session();
+  await page.click('[data-open$="|dining|Southern"]');
+  assert.ok(await page.$(".sheet[role=dialog]"));
+  const trail = await page.$eval(".trail", (e) => e.textContent);
+  assert.match(trail, /Hot Chicken Co/); assert.match(trail, /Biscuit Cafe/); assert.match(trail, /\$34/);
+  assert.equal(await page.evaluate(() => document.activeElement.id), "sheet-close");
+  await page.keyboard.press("Escape");
+  assert.equal(await page.$(".sheet"), null);
+  assert.ok(await page.evaluate(() => document.activeElement.dataset.open?.endsWith("Southern")), "focus returns to the stamp");
+  await page.click('[data-open$="|dining|Southern"]');
+  await page.click("[data-report]");
+  assert.ok(!(await stampLabels(page)).includes("Southern"));
+  assert.match(await page.$eval("#app", (e) => e.textContent), /Thanks\. That stamp is hidden/);
+  noErrors(page); await page.closeCtx();
+});
+
+test("search and filter, collection index counts", async () => {
+  const page = await session();
+  await page.click('[data-filter="dining"]');
+  assert.deepEqual((await stampLabels(page)).sort(), ["American", "Barbecue", "Southern"]);
+  await page.click('[data-filter="all"]');
+  await page.type("#q", "tenn");
+  await sleep(400); // search is debounced
+  assert.deepEqual(await stampLabels(page), ["TN"]);
+  assert.equal(await page.evaluate(() => document.activeElement.id), "q", "typing must not lose focus");
+  await page.$eval("#q", (e) => { e.value = ""; e.dispatchEvent(new Event("input", { bubbles: true })); });
+  await sleep(400);
+  const idx = await page.$eval(".index", (e) => e.textContent);
+  assert.match(idx, /States collected: 1 of 50/); assert.match(idx, /Cuisines collected: 3 of 20/);
+  noErrors(page); await page.closeCtx();
+});
+
+test("trip recap is a boarding pass and privacy defaults hold", async () => {
+  const page = await session();
+  await tab(page, "trips");
+  const pass = await page.$eval(".pass", (e) => e.textContent);
+  assert.match(pass, /CHI/); assert.match(pass, /BNA/); assert.match(pass, /Trip to Nashville/); assert.match(pass, /Oct 9.10, 2026/);
+  assert.ok(!(await page.$eval(".preview", (e) => e.textContent)).includes("Hot Chicken"));
+  await page.click("#names");
+  assert.ok((await page.$eval(".preview", (e) => e.textContent)).includes("Hot Chicken"));
+  const places = await page.$eval(".day", (e) => e.textContent);
+  assert.match(places, /Fri · Oct 9/);
+  noErrors(page); await page.closeCtx();
+});
+
+test("refund and dispute only affect their own persona; recap ignores sub-$5", async () => {
+  const page = await session();
+  await openDemo(page);
+  await page.click('[data-dis="maya:1"]');
+  await page.select("#pers", "daniel");
+  await tab(page, "passport");
+  assert.ok((await stampLabels(page)).includes("Japanese"), "Maya's dispute must not touch Daniel");
+  await tab(page, "trips");
+  assert.match(await page.$eval(".pass", (e) => e.textContent), /Meals\s*3/); // Ramen + Injera + Unknown Cafe; the $3 Taqueria is under the minimum
+  noErrors(page); await page.closeCtx();
+});
+
+test("rename is escaped (no HTML injection) and survives reload", async () => {
+  const page = await session();
+  await tab(page, "trips");
+  await page.$eval("#rn", (e) => (e.value = "<img src=x onerror=window.__x=1>"));
+  await page.click("#rnb");
+  assert.ok(!(await page.evaluate(() => window.__x)));
+  assert.equal(await page.$(".pass img"), null);
+  await page.reload();
+  assert.ok((await page.$eval(".pass", (e) => e.textContent)).includes("<img src=x"));
+  noErrors(page); await page.closeCtx();
+});
+
+test("offline: cached snapshot, paused changes, queued rename, survives reload", async () => {
+  const page = await session();
+  await tab(page, "trips");
+  await openDemo(page);
+  await page.click("#off");
+  assert.ok(await page.$eval("#pers", (e) => e.disabled));
+  assert.ok(await page.$eval("[data-ref]", (e) => e.disabled));
+  await page.$eval("#rn", (e) => (e.value = "Girls weekend"));
+  await page.click("#rnb");
+  assert.match(await page.$eval("#app", (e) => e.textContent), /queued/);
+  await page.reload();
+  assert.ok(await page.$eval("#off", (e) => e.checked), "offline flag persists");
+  await openDemo(page);
+  await page.click("#off");
+  assert.equal(await page.$eval(".pass h2", (e) => e.textContent), "Girls weekend");
+  noErrors(page); await page.closeCtx();
+});
+
+test("save image creates a real PNG; share sheet and its failure paths", async () => {
+  const page = await session();
+  await tab(page, "trips");
+  await page.evaluate(() => { window.__b = null; const o = URL.createObjectURL; URL.createObjectURL = (b) => { window.__b = b; return o.call(URL, b); }; });
+  await page.click("#save"); await sleep(2500);
+  const info = await page.evaluate(async () => window.__b && { type: window.__b.type, size: window.__b.size, magic: Array.from(new Uint8Array(await window.__b.slice(1, 4).arrayBuffer())) });
+  assert.equal(info.type, "image/png"); assert.ok(info.size > 5000); assert.equal(String.fromCharCode(...info.magic), "PNG");
+  // share sheet called with the file
+  await page.evaluate(() => { window.__s = null; navigator.canShare = () => true; navigator.share = async (d) => { window.__s = { n: d.files[0].name, t: d.files[0].type, title: d.title }; }; });
+  await page.click("#share"); await sleep(2500);
+  assert.deepEqual(await page.evaluate(() => window.__s), { n: "trip-recap.png", t: "image/png", title: "Trip to Nashville" });
+  // user cancels: no download, friendly message
+  await page.evaluate(() => { navigator.share = async () => { throw new DOMException("c", "AbortError"); }; window.__d = 0; HTMLAnchorElement.prototype.click = function () { if (this.download) window.__d++; }; });
+  await page.click("#share"); await sleep(2500);
+  assert.equal(await page.evaluate(() => window.__d), 0);
+  assert.match(await page.$eval("#msg", (e) => e.textContent), /cancelled/);
+  // any other failure falls back to download
+  await page.evaluate(() => { navigator.share = async () => { throw new Error("boom"); }; });
+  await page.click("#share"); await sleep(2500);
+  assert.equal(await page.evaluate(() => window.__d), 1);
+  noErrors(page); await page.closeCtx();
+});
+
+test("keyboard focus is kept after re-render", async () => {
+  const page = await newPage(browser);
+  await start(page, FILE_URL, { dining: false, domestic: false });
+  await tab(page, "settings");
+  await page.click("[data-type=dining]");
+  assert.equal(await page.evaluate(() => document.activeElement.dataset.type), "dining");
+  noErrors(page); await page.closeCtx();
+});
+
+test("fresh stamps animate; reduced motion turns the animation off", async () => {
+  const page = await newPage(browser);
+  await start(page, FILE_URL);
+  assert.ok(await page.$(".stamp.fresh"), "first view marks new stamps");
+  await page.closeCtx();
+  const calm = await newPage(browser, { reduceMotion: true });
+  await start(calm, FILE_URL);
+  const name = await calm.$eval(".stamp.fresh .art", (e) => getComputedStyle(e).animationName);
+  assert.equal(name, "none");
+  await calm.closeCtx();
+});
+
+test("corrupt saved state recovers; cover can be closed and reopened", async () => {
+  const page = await session();
+  await page.evaluate(() => localStorage.setItem("passport-proto-v2", JSON.stringify({ p: "zzz", tab: "nope", filter: "x", opened: true, hidden: 5 })));
+  await page.reload();
+  assert.match(await page.$eval("#app", (e) => e.textContent), /Passport/);
+  await page.click("[data-close-book]");
+  assert.ok(await page.$(".cover"));
+  await page.click("#open");
+  assert.ok(await page.$("header.top"));
+  noErrors(page); await page.closeCtx();
+});
+
+test("wrongly typed saved state (null title, string queue, bad cache) does not blank the page", async () => {
+  const page = await session();
+  await page.evaluate(() => localStorage.setItem("passport-proto-v2", JSON.stringify({ opened: true, onboarded: true, title: null, queue: "x", events: 3, cache: {}, q: 7, types: { dining: "yes" } })));
+  await page.reload();
+  assert.match(await page.$eval("#app", (e) => e.textContent), /Passport/);
+  noErrors(page); await page.closeCtx();
+});
+
+test("the stamp dialog is modal: background is inert and Tab cannot leave it", async () => {
+  const page = await session();
+  await page.click("[data-open]");
+  assert.ok(await page.$eval("main", (e) => e.inert));
+  assert.ok(await page.$eval("nav", (e) => e.inert));
+  await page.evaluate(() => document.activeElement.blur());
+  await page.keyboard.press("Tab");
+  assert.ok(await page.evaluate(() => !!document.activeElement.closest(".sheet")), "focus is pulled back into the dialog");
+  await page.keyboard.press("Escape");
+  assert.ok(!(await page.$eval("main", (e) => e.inert)));
+  noErrors(page); await page.closeCtx();
+});
+
+test("hiding a stamp moves focus somewhere sensible instead of dropping it", async () => {
+  const page = await session();
+  await page.click("[data-hide]");
+  assert.equal(await page.evaluate(() => document.activeElement.tagName), "MAIN");
+  noErrors(page); await page.closeCtx();
+});

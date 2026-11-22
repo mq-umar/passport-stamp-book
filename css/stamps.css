@@ -1,0 +1,28 @@
+/* Stamps are ink pressed onto the page: no tile, no card, slightly crooked, overlapping. */
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 4px; padding: 8px 0 4px; list-style: none; margin: 0; }
+@media (min-width: 440px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+.stamp { display: flex; flex-direction: column; align-items: center; position: relative; --r: 0deg; --dx: 0px; --dy: 0px; }
+.stamp .hit { background: none; border: 0; padding: 0; min-height: 0; width: 100%; cursor: pointer; color: inherit; border-radius: 6px; position: relative; display: block; }
+.stamp .hit:hover:not(:disabled) { background: none; color: inherit; }
+.stamp .art { width: 100%; height: auto; display: block; transform: translate(var(--dx), var(--dy)) rotate(var(--r)); }
+.stamp .hide { border: 0; background: none; color: var(--mute); text-decoration: underline; font: 600 11px var(--mono); letter-spacing: .06em; min-height: 36px; padding: 2px 12px; font-weight: 600; }
+.stamp .hide:hover:not(:disabled) { background: none; color: var(--ink); }
+
+.k-city { --k: var(--ink-city); }
+.k-state { --k: var(--ink-state); }
+.k-dining { --k: var(--ink-dining); }
+.k-intl { --k: var(--ink-intl); }
+.art .ring { fill: none; stroke: var(--k); }
+.art .fill { fill: var(--k); }
+.art text { fill: var(--k); }
+.art .kt { font: 600 9px var(--mono); letter-spacing: .22em; }
+.art .dt { font: 600 8.5px var(--mono); letter-spacing: .14em; }
+.art .arc { font: 700 9.5px var(--mono); letter-spacing: .18em; }
+.art .mono { font-family: var(--serif); font-weight: 700; }
+.art .nm { font: 700 12px var(--serif); letter-spacing: .04em; }
+.art .pm { fill: none; stroke: var(--k); opacity: .38; }
+.art .ink { opacity: .94; }
+
+/* a fresh stamp is pressed down with a short thunk */
+@keyframes press { 0% { transform: translate(var(--dx), var(--dy)) rotate(var(--r)) scale(1.4); opacity: 0; } 55% { transform: translate(var(--dx), var(--dy)) rotate(var(--r)) scale(.96); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) rotate(var(--r)) scale(1); opacity: 1; } }
+.stamp.fresh .art { animation: press .28s cubic-bezier(.2, .8, .3, 1) both; }
