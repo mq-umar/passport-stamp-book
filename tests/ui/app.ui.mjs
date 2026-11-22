@@ -430,3 +430,29 @@ test("notifications: both off by default, previews never show amounts, choices p
   assert.deepEqual(await on(), [true, false]);
   noErrors(page); await page.closeCtx();
 });
+
+test("hostile text in every transaction field is shown as text and never becomes markup", async () => {
+  const page = await session();
+  const evil = { m: "<img src=x onerror=window.__x=1>Shop", city: '"><script>window.__x=2</script>Town', cuisine: "<svg onload=window.__x=3>Thai" };
+  await page.evaluate((e) => {
+    window.__x = 0;
+    PERSONAS.maya.tx.forEach((t) => { t.m = e.m; t.city = e.city; if (t.cuisine) t.cuisine = e.cuisine; });
+  }, evil);
+  const inert = async (where) => {
+    const bad = await page.evaluate(() => ({
+      handlers: document.querySelectorAll("[onerror],[onload],[onclick]").length,
+      injected: document.querySelectorAll('#app img[src="x"], #app svg[onload], #app script').length, ran: window.__x,
+    }));
+    assert.deepEqual(bad, { handlers: 0, injected: 0, ran: 0 }, where);
+  };
+  await tab(page, "trips"); await tab(page, "passport");              // re-render with the poisoned data
+  await inert("passport grid");
+  await page.click(".stamp .hit");                                    // stamp sheet and its purchase trail
+  await inert("stamp sheet");
+  assert.ok((await page.$eval(".sheet", (e) => e.textContent)).includes("<img src=x"), "shown as literal text");
+  await page.click("#sheet-close");
+  await tab(page, "trips"); await page.click("#names");               // places list and share preview with names on
+  await inert("trips and share preview");
+  assert.ok((await page.$eval(".preview", (e) => e.textContent)).includes("<img src=x"));
+  noErrors(page); await page.closeCtx();
+});
