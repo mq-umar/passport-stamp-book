@@ -186,9 +186,9 @@ var Views = (function () {
     }
     return '<section class="panel" aria-label="Notifications"><h2 class="sec" style="margin-top:0">Notifications</h2>' +
       row("recap", "Trip recap ready", "One message when a trip recap is ready") + row("digest", "Weekly digest", "A short summary of your Passport, once a week") +
-      '<small>Off until you choose. Never more than one a day, and never any amounts or restaurant names.</small>' +
-      '<h3 class="sec">Preview</h3><div class="notif" aria-label="Notification preview"><span class="app">Passport</span><p>' + recapMsg + '</p></div>' +
-      '<div class="notif" aria-label="Digest preview"><span class="app">Passport &middot; weekly</span><p>' + digestMsg + '</p></div></section>';
+      '<small>Off until you choose. Never more than one a day, and never any amounts or restaurant names. In this prototype nothing is actually sent; the previews show what you would get.</small>' +
+      '<h3 class="sec">Preview</h3><div class="notif" role="group" aria-label="Notification preview"><span class="app">Passport</span><p>' + recapMsg + '</p></div>' +
+      '<div class="notif" role="group" aria-label="Digest preview"><span class="app">Passport &middot; weekly</span><p>' + digestMsg + '</p></div></section>';
   }
 
   /** Privacy centre: download a copy of what is stored, or delete it. Deleting asks twice, in the page (no browser dialog). */

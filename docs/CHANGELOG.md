@@ -2,6 +2,8 @@
 
 One line per improvement pass, newest first.
 
+- Pass 14: Codex final review fixes. The service worker only ever deletes its own `passport-shell-*` caches; the notification section says plainly that this prototype sends nothing; preview boxes are real labelled groups so screen readers announce them.
+
 - Pass 13: property-style tests. 300 seeded random purchase sets check that stamps only come from posted, non-refunded, non-disputed purchases of at least $5, that cuisine and domestic rules and the daily cap always hold, and that stamp ids are unique. Roadmap gains a prioritised next-plan section.
 
 - Pass 12: calmer stamp grid. The "Hide" link under every stamp is gone; hiding lives in each stamp's detail sheet (where it already was), with the grid test updated to prove it. Restore stays on the page when anything is hidden.
