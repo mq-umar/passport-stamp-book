@@ -2,6 +2,8 @@
 
 One line per improvement pass, newest first.
 
+- Pass 15: security hardening and deploy readiness. Strict CSP (header + meta), framing and permissions headers on every response, static mode (`js/config.js`) for hosts with no backend, `scripts/build-static.mjs` shared by Vercel (`vercel.json`, with the same headers) and the GitHub Pages workflow, screenshot script and refreshed screenshots, README security and transparency sections. +1 server test, +2 browser tests.
+
 - Pass 14: Codex final review fixes. The service worker only ever deletes its own `passport-shell-*` caches; the notification section says plainly that this prototype sends nothing; preview boxes are real labelled groups so screen readers announce them.
 
 - Pass 13: property-style tests. 300 seeded random purchase sets check that stamps only come from posted, non-refunded, non-disputed purchases of at least $5, that cuisine and domestic rules and the daily cap always hold, and that stamp ids are unique. Roadmap gains a prioritised next-plan section.

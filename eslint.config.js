@@ -6,7 +6,7 @@ const globals = require("globals");
 const appGlobals = { Rules: "readonly", Art: "readonly", Store: "readonly", Views: "readonly", PERSONAS: "readonly" };
 
 module.exports = [
-  { ignores: ["node_modules/**", "docs/**"] },
+  { ignores: ["node_modules/**", "docs/**", "_site/**", ".vercel/**"] },
   js.configs.recommended,
   { files: ["js/**/*.js"], languageOptions: { sourceType: "script", globals: { ...globals.browser, ...appGlobals, module: "readonly" } },
     rules: { "no-redeclare": ["error", { builtinGlobals: false }], "no-unused-vars": ["error", { vars: "local", caughtErrors: "none" }] } },

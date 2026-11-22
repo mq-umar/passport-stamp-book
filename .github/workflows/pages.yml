@@ -32,13 +32,7 @@ jobs:
       - run: npm run lint
       - run: npm test
       - name: Assemble the static site
-        run: |
-          mkdir _site
-          cp index.html sw.js icon.svg manifest.webmanifest _site/
-          cp -r css js _site/
-          mkdir _site/docs && cp docs/*.png _site/docs/
-          printf 'window.PASSPORT_STATIC = true;\n' > _site/js/config.js
-          touch _site/.nojekyll
+        run: node scripts/build-static.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
