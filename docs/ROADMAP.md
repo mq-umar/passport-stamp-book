@@ -44,7 +44,20 @@ Rules for every pass: tests stay green and never decrease in number; visual chan
 - [ ] 4. Partial re-rendering for search and a render-time budget
 - [ ] 5. Performance and size budget, Lighthouse in CI
 - [ ] 6. Split `views.js` per screen; extract a `counts()` helper
-- [ ] 7. Property-style tests for `rules.js` invariants
+- [x] 7. Property-style tests for `rules.js` invariants (300 random purchase sets: FR1, FR2, FR3, FR9, US10, US11)
+
+## Next plan (UI/UX and features found in review)
+Ordered by value to a real user. None of these needs a decision from the owner.
+1. **Stamp detail share image.** Needs a dedicated canvas drawer (the stamp SVG relies on page CSS and a shared ink filter, so it cannot be rasterised on its own). Draw the stamp shape and text directly, like `drawShareImage` does for recaps.
+2. **First-run payoff.** After onboarding, open on the newest stamp with a one-line "Next goal" hint instead of the bare grid. Goals currently sit below the fold.
+3. **Compact goals strip** at the top of the Passport tab (next goal and progress), with the full list below.
+4. **Empty states and microcopy pass** (Track 3 item 5): friendlier copy for no stamps, no trips, offline, deleted data.
+5. **Year in review** and **analytics view** (Track 2 items 6 and 7), built on the same derived-data pattern as goals.
+6. **Retroactive backfill demo** (PRD Phase 2): a one-time "we found 12 months of stamps" moment after opting in.
+7. **Additional cardholders (PRD US12):** needs a `holder` field on transactions and a rule that keeps another holder's activity out of this Passport, with a property test.
+8. **"New city dining" stamp** when a meal has no cuisine data (PRD FR3 allows it, nothing issues it today).
+9. **Craft:** page-turn cover transition, paper grain, stamp variety, print stylesheet.
+10. **Engineering:** split `views.js` per screen, JSDoc + `tsc --checkJs`, visual-regression screenshots, Lighthouse budget in CI.
 
 ## Pass log
 See [CHANGELOG.md](CHANGELOG.md).

@@ -452,3 +452,35 @@ test("computeRecap leaves hidden places out of the recap but keeps them listed s
   assert.equal(hid.dining, 0);
   assert.equal(hid.allTx.length, 2);
 });
+
+test("property: for 300 random purchase sets the stamp rules always hold", () => {
+  let seed = 12345; // small deterministic generator so a failure can be reproduced
+  const rnd = (n) => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed % n; };
+  const cities = [["Nashville", "TN"], ["Austin", "TX"], ["Denver", "CO"], ["Seattle", "WA"], ["Paris", "FR"]];
+  const cuisines = [null, "Barbecue", "Thai", "Italian", "Ethiopian"];
+  const statuses = ["posted", "posted", "posted", "pending"];
+  for (let run = 0; run < 300; run++) {
+    const tx = Array.from({ length: rnd(40) }, (_, i) => {
+      const [city, st] = cities[rnd(cities.length)];
+      return makeTx({ id: i + 1, d: `2026-10-${String(1 + rnd(5)).padStart(2, "0")}`, city, st, intl: st === "FR",
+        cat: rnd(2) ? "dining" : "transport", cuisine: cuisines[rnd(cuisines.length)], amt: rnd(30), status: statuses[rnd(statuses.length)], miles: rnd(400) });
+    });
+    const refunded = new Set(tx.filter(() => rnd(6) === 0).map((t) => "p:" + t.id));
+    const disputed = new Set(tx.filter(() => rnd(8) === 0).map((t) => "p:" + t.id));
+    const types = { dining: !!rnd(2), domestic: !!rnd(2) };
+    const stamps = Rules.computeStamps("p", tx, { types, refunded, disputed });
+    const byId = Object.fromEntries(tx.map((t) => [t.id, t]));
+    const perDay = {};
+    assert.equal(new Set(stamps.map((s) => s.id)).size, stamps.length, "stamp ids are unique");
+    for (const s of stamps) {
+      const t = byId[s.tx];
+      assert.equal(t.status, "posted", "FR1: only posted purchases earn stamps");
+      assert.ok(t.amt >= Rules.MIN_AMT, "FR9: minimum amount");
+      assert.ok(!refunded.has("p:" + t.id) && !disputed.has("p:" + t.id), "US10/US11: refunded or disputed never earn");
+      if (s.k === "dining") { assert.ok(types.dining && t.cuisine, "FR3: no cuisine, no cuisine stamp"); assert.equal(s.label, t.cuisine); }
+      if (s.k === "city" || s.k === "state") { assert.ok(types.domestic && t.miles > Rules.MIN_MILES && !t.intl, "FR2: domestic needs distance"); }
+      perDay[t.d] = (perDay[t.d] || 0) + 1;
+      assert.ok(perDay[t.d] <= Rules.MAX_NEW_STAMPS_PER_DAY, "FR9: daily cap");
+    }
+  }
+});
