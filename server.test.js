@@ -347,3 +347,17 @@ test("recap names are stored per trip (persona:date) and per persona, and nothin
     assert.equal((await put(bad)).response.status, 400, JSON.stringify(bad));
   }
 });
+
+test("DELETE /api/prefs clears only the caller's stored preferences and needs a session", async () => {
+  const a = await login(), b = await login();
+  const ha = { authorization: `Bearer ${a.body.token}`, "content-type": "application/json" };
+  const hb = { authorization: `Bearer ${b.body.token}`, "content-type": "application/json" };
+  const prefs = { types: { dining: true, domestic: true }, hidden: [], refunded: [], disputed: [], title: {} };
+  for (const h of [ha, hb]) await request("/api/prefs", { method: "PUT", headers: h, body: JSON.stringify(prefs) });
+  const anon = await request("/api/prefs", { method: "DELETE" });
+  assert.equal(anon.response.status, 401);
+  const del = await request("/api/prefs", { method: "DELETE", headers: ha });
+  assert.equal(del.response.status, 200);
+  assert.deepEqual((await request("/api/prefs", { headers: ha })).body, {});
+  assert.deepEqual((await request("/api/prefs", { headers: hb })).body, prefs);
+});

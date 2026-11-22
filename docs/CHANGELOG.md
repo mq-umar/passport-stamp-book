@@ -2,6 +2,8 @@
 
 One line per improvement pass, newest first.
 
+- Pass 6: privacy centre. Settings gets "Export my data" (JSON: choices, hidden stamps, refunds, recap names; no amounts or merchants; works offline) and "Delete my data" (in-page two-step confirm, clears device and mock server via new `DELETE /api/prefs`, returns to setup). Codex review found and we fixed: delete being undone by a later sync (sync now skips unchanged prefs), failed deletes reported as success (`api()` now rejects non-OK), and out-of-order writes (prefs writes are serialised and delete waits for them). +1 server test, +3 browser tests.
+
 - Pass 5: stabilise. The share-image browser test waited a fixed 2.5 s per step and flaked under load; it now waits on the observable result (stable over repeated runs). +1 browser test for FR8 (turning a stamp type off hides it everywhere, on restores it). No product change. US12 (additional cardholders) still needs a data-model change and is queued.
 
 - Pass 4: collection goals. Five goals (3 and 5 states, 5 cities, 5 cuisines, first country) shown on the Passport tab with progress bars; finished goals get a seal. Derived from visible stamps, so hiding or refunding can un-complete one. +1 unit, +1 browser test. Also committed the refund-safe trip naming fix.

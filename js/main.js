@@ -117,6 +117,22 @@
       else { S.title[key] = v; Store.log("recap_edited", { queued: false }); }
       render(); return;
     }
+    if (t.id === "export") {
+      var blob = new Blob([JSON.stringify(Store.exportData(), null, 2)], { type: "application/json" });
+      var u = URL.createObjectURL(blob), a = document.createElement("a");
+      a.href = u; a.download = "passport-data.json"; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(u); }, 1000);
+      Store.log("data_exported"); S.pmsg = "Your data was downloaded as passport-data.json."; render(); return;
+    }
+    if (t.id === "del") { S.confirmDelete = true; render(); var y = document.getElementById("del-no"); if (y) y.focus(); return; }
+    if (t.id === "del-no") { S.confirmDelete = false; render(); var b = document.getElementById("del"); if (b) b.focus(); return; }
+    if (t.id === "del-yes") {
+      Store.deleteData().then(function (ok) {
+        Store.get().notice = ok ? "Your data was deleted. Passport is back to setup." : "Your data was deleted on this device, but the server could not be reached. Try again when you are online.";
+        focusMain = true; render();
+      });
+      return;
+    }
     if (t.id === "share") share("share");
     if (t.id === "save") share("save");
   });

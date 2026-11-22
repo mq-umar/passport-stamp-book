@@ -172,7 +172,20 @@ var Views = (function () {
     return '<div class="panel">' + typeSwitches(c, "st") +
       '<small>Country stamps for international spend are always on. Stamps are built only from posted card transactions; no device location is used.</small></div>' +
       '<div class="panel"><b>How stamps work</b><p class="mute" style="margin:6px 0 0">A stamp needs a posted purchase of at least $' + R.MIN_AMT +
-      '. Refunded or disputed purchases never earn one. Nothing here uses your location.</p></div>';
+      '. Refunded or disputed purchases never earn one. Nothing here uses your location.</p></div>' + privacy(c);
+  }
+
+  /** Privacy centre: download a copy of what is stored, or delete it. Deleting asks twice, in the page (no browser dialog). */
+  function privacy(c) {
+    var S = c.S, off = S.offline ? "disabled" : "";
+    return '<section class="panel privacy" aria-label="Your data"><h2 class="sec" style="margin-top:0">Your data</h2>' +
+      '<p class="mute" style="margin:0 0 10px">Passport keeps your stamp choices, hidden stamps and recap names. It never stores amounts in an export or shares them.</p>' +
+      '<div class="row"><button id="export">Export my data</button>' +
+      (S.confirmDelete ? '' : '<button class="danger" id="del" ' + off + '>Delete my data</button>') + '</div>' +
+      (S.confirmDelete ? '<div class="confirm" role="group" aria-labelledby="dc-t" aria-describedby="dc-d"><b id="dc-t">Delete everything?</b>' +
+        '<p id="dc-d" class="mute" style="margin:4px 0 10px">This clears your choices, hidden stamps and recap names, and returns you to setup. Your card activity is not affected.</p>' +
+        '<div class="row"><button class="danger" id="del-yes">Yes, delete</button><button id="del-no">Keep my data</button></div></div>' : '') +
+      '<div role="status" aria-live="polite" id="pmsg" class="mute" style="margin-top:10px">' + esc(S.pmsg || "") + '</div></section>';
   }
 
   function demo(c) {

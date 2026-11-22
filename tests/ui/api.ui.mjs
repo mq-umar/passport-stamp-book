@@ -72,3 +72,36 @@ test("persona switch loads that persona's feed from the API", async () => {
   assert.ok((await stampLabels(page)).includes("Ethiopian"));
   await page.closeCtx();
 });
+
+test("deleting my data empties the server copy and it stays empty after the next render", async () => {
+  const page = await newPage(browser);
+  await login(page);
+  await page.click("#open");
+  await page.click('[data-ob="1"]'); await page.click('[data-ob="2"]');
+  await page.click("[data-type=domestic]"); await page.click("[data-ob-done]");
+  await sleep(600);
+  const token = await page.evaluate(() => JSON.parse(localStorage.getItem("passport-proto-v2")).token);
+  const get = () => page.evaluate(async (t) => (await fetch("/api/prefs", { headers: { authorization: "Bearer " + t } })).json(), token);
+  assert.equal((await get()).types.domestic, true);
+  await tab(page, "settings");
+  await page.click("#del"); await page.click("#del-yes");
+  await page.waitForFunction(() => /was deleted/.test(document.querySelector(".note")?.textContent || ""), { timeout: 10000 });
+  await sleep(800); // longer than the 200 ms sync delay: a re-created PUT would have landed by now
+  assert.deepEqual(await get(), {});
+  assert.match(await page.$eval(".note", (e) => e.textContent), /deleted\. Passport is back/);
+  await page.closeCtx();
+});
+
+test("a change made just before deleting cannot bring the server copy back", async () => {
+  const page = await newPage(browser);
+  await login(page);
+  await page.click("#open");
+  await page.click('[data-ob="1"]'); await page.click('[data-ob="2"]'); await page.click("[data-ob-done]");
+  await tab(page, "settings");
+  const token = await page.evaluate(() => JSON.parse(localStorage.getItem("passport-proto-v2")).token);
+  await page.click("[data-type=dining]"); await page.click("#del"); await page.click("#del-yes");
+  await page.waitForFunction(() => /was deleted/.test(document.querySelector(".note")?.textContent || ""), { timeout: 10000 });
+  await sleep(800);
+  assert.deepEqual(await page.evaluate(async (t) => (await fetch("/api/prefs", { headers: { authorization: "Bearer " + t } })).json(), token), {});
+  await page.closeCtx();
+});

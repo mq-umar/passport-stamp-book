@@ -213,3 +213,7 @@ nav .badge { position: absolute; top: 6px; left: 50%; margin-left: 8px; min-widt
 .bar-track i { display: block; height: 100%; background: var(--ink); }
 .goal.done .bar-track i { background: var(--ink-intl); }
 .g-n { font: 12px var(--mono); color: var(--mute); }
+
+/* Privacy centre */
+button.danger { border-color: var(--bad); color: var(--bad); }
+.confirm { margin-top: 12px; padding: 12px; border: 2px solid var(--bad); background: var(--page-2); }

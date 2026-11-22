@@ -208,7 +208,7 @@ function createServer() {
     const apiRoutes = {
       "/api/login": ["POST"],
       "/api/transactions": ["GET"],
-      "/api/prefs": ["GET", "PUT"],
+      "/api/prefs": ["GET", "PUT", "DELETE"],
     };
     if (Object.hasOwn(apiRoutes, pathname)) {
       const methods = apiRoutes[pathname];
@@ -255,6 +255,11 @@ function createServer() {
 
       if (req.method === "GET") {
         sendJson(res, 200, session.prefs);
+        return;
+      }
+      if (req.method === "DELETE") {
+        session.prefs = {};
+        sendJson(res, 200, { ok: true });
         return;
       }
       const prefs = await readJsonBody(req);

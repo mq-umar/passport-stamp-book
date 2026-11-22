@@ -17,7 +17,7 @@ var Store = (function () {
   var STATIC_TX = {}; // the built-in transactions, restored on sign-out so live data never lingers
   Object.keys(PERSONAS).forEach(function (k) { STATIC_TX[k] = PERSONAS[k].tx; });
   var SETS = ["hidden", "refunded", "disputed", "seen"];
-  var TRANSIENT = ["sheet", "msg", "notice", "q"]; // never persisted
+  var TRANSIENT = ["sheet", "msg", "notice", "q", "confirmDelete", "pmsg"]; // never persisted
   S.sheet = null;
 
   /** Accept a stored value only if it has the same type as the default (localStorage can be edited or corrupted). */
@@ -56,16 +56,22 @@ var Store = (function () {
     return o;
   }
 
-  var syncTimer;
+  var syncTimer, pending = Promise.resolve(), lastSynced = null; // lastSynced: the prefs the server is known to hold (null = unknown)
+  function prefsBody() {
+    return JSON.stringify({
+      types: S.types, hidden: Array.from(S.hidden), refunded: Array.from(S.refunded),
+      disputed: Array.from(S.disputed), title: S.title
+    });
+  }
   function sync() {
     if (!API || !S.token || S.offline) return;
     clearTimeout(syncTimer);
     syncTimer = setTimeout(function () {
       if (!S.token) return;
-      api("/api/prefs", { method: "PUT", body: JSON.stringify({
-        types: S.types, hidden: Array.from(S.hidden), refunded: Array.from(S.refunded),
-        disputed: Array.from(S.disputed), title: S.title
-      }) }).catch(function () {});
+      var body = prefsBody();
+      if (body === lastSynced) return; // nothing changed, so do not re-create data the user deleted
+      // one write at a time, in order, so an older PUT can never finish after a newer one or after a DELETE
+      pending = pending.then(function () { return api("/api/prefs", { method: "PUT", body: body }); }).then(function () { lastSynced = body; }, function () {});
     }, 200);
   }
 
@@ -85,6 +91,7 @@ var Store = (function () {
     if (S.token) headers.authorization = "Bearer " + S.token;
     return fetch(path, { method: opt.method || "GET", body: opt.body, headers: headers }).then(function (r) {
       if (r.status === 401) { S.token = null; var e = new Error("unauthorized"); e.code = 401; throw e; }
+      if (!r.ok) throw new Error("http " + r.status);
       return r.json();
     });
   }
@@ -111,12 +118,35 @@ var Store = (function () {
         S.types = j.types; S.hidden = new Set(j.hidden); S.refunded = new Set(j.refunded);
         S.disputed = new Set(j.disputed); S.title = j.title || {};
         if (S.types.dining || S.types.domestic) S.onboarded = true;
+        lastSynced = prefsBody();
       }
     }).catch(function () {});
   }
 
-  function signOut() {
+  /** Everything held about the user, as a plain object for the "Export my data" download. No amounts or merchants. */
+  function exportData() {
+    return {
+      exportedAt: new Date().toISOString(), persona: S.p,
+      stampTypes: S.types, hiddenStamps: Array.from(S.hidden), seenStamps: Array.from(S.seen), refundedPurchases: Array.from(S.refunded), disputedPurchases: Array.from(S.disputed),
+      recapNames: S.title, unsyncedRecapNames: S.queue.map(function (q) { return { trip: q.k || q.p, name: q.v }; }), showMerchantNamesInShares: S.showNames, reportedStamps: S.reported, activityLog: S.events
+    };
+  }
+
+  /** Delete everything stored about the user (device and mock server). Keeps the sign-in and the open book. Resolves true if the server delete worked too. */
+  function deleteData() {
     clearTimeout(syncTimer);
+    var token = S.token, d = DEFAULTS(); d.token = token; d.opened = S.opened; d.tab = "settings"; d.live = S.live;
+    S = d; S.sheet = null;
+    try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+    var empty = prefsBody(); // the empty state is what the server will hold; do not push it back
+    lastSynced = empty;
+    // wait for any sync already in flight, so its PUT cannot land after the DELETE and bring the data back
+    if (API && token) return pending.then(function () { lastSynced = empty; return api("/api/prefs", { method: "DELETE" }); }).then(function () { return true; }, function () { lastSynced = null; return false; });
+    return Promise.resolve(true);
+  }
+
+  function signOut() {
+    clearTimeout(syncTimer); lastSynced = null;
     Object.keys(STATIC_TX).forEach(function (k) { PERSONAS[k].tx = STATIC_TX[k]; });
     try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
     var d = DEFAULTS(); d.opened = S.opened; S = d; S.sheet = null;
@@ -124,6 +154,6 @@ var Store = (function () {
 
   return {
     API: API, get: function () { return S; }, load: load, save: save, log: log, api: api,
-    loadTx: loadTx, loadPrefs: loadPrefs, signOut: signOut
+    loadTx: loadTx, loadPrefs: loadPrefs, signOut: signOut, exportData: exportData, deleteData: deleteData
   };
 })();

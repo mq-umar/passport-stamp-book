@@ -354,3 +354,28 @@ test("FR8: turning a stamp type off hides its stamps everywhere, turning it on b
   assert.deepEqual(await kinds(), ["city", "dining", "state"]);
   noErrors(page); await page.closeCtx();
 });
+
+test("privacy centre: export contains no amounts or merchants; delete asks twice and resets to setup", async () => {
+  const page = await session();
+  await page.evaluate(() => { window.__x = null; const o = URL.createObjectURL; URL.createObjectURL = (b) => { window.__x = b; return o.call(URL, b); }; HTMLAnchorElement.prototype.click = function () {}; });
+  await tab(page, "settings");
+  await page.click("#export");
+  const text = await page.evaluate(() => window.__x.text());
+  const data = JSON.parse(text);
+  assert.deepEqual(data.stampTypes, { dining: true, domestic: true });
+  assert.ok(!/amt|amount|\$\d/.test(text), "export must not contain amounts");
+  assert.ok(!/Pancake|Hattie|Cafe/i.test(JSON.stringify(Object.keys(data))));
+  assert.match(await page.$eval("#pmsg", (e) => e.textContent), /downloaded/);
+  // delete: first click only asks
+  await page.click("#del");
+  assert.ok(await page.$("#del-yes"));
+  assert.equal(await page.evaluate(() => document.activeElement.id), "del-no");
+  await page.click("#del-no");
+  assert.equal(await page.$("#del-yes"), null);
+  assert.equal(await page.evaluate(() => document.activeElement.id), "del");
+  await page.click("#del"); await page.click("#del-yes");
+  await page.waitForFunction(() => /was deleted/.test(document.querySelector(".note")?.textContent || ""), { timeout: 10000 });
+  await tab(page, "passport");
+  assert.match(await page.$eval("main", (e) => e.textContent), /Step 1 of 3/, "back to onboarding");
+  noErrors(page); await page.closeCtx();
+});
