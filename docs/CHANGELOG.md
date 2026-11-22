@@ -2,6 +2,8 @@
 
 One line per improvement pass, newest first.
 
+- Pass 11: ESLint (flat config, recommended rules, browser/service-worker/node globals) added and wired into `npm run test:all` and CI; fixed the three real findings (unused variable and import, undeclared test global). Lint is clean.
+
 - Pass 10: installable and offline. Web manifest, icon, service worker (caches only the static shell, never `/api`), Open Graph and theme-colour meta tags; the book opens offline after one visit (sign-in screen, since data needs the backend). +1 server test, +1 browser test.
 
 - Pass 9: notification preferences and digest preview (PRD US15). Settings gets two switches (trip recap ready, weekly digest), both off until chosen, with previews of the exact message (no amounts or restaurant names). Fixed focus being lost after toggling. +1 browser test.

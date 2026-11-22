@@ -1,7 +1,7 @@
 // WCAG 2.0/2.1 A and AA audit (axe-core) of every screen, in light and night modes, at phone and desktop widths.
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { launch, newPage, start, tab, openDemo, axeViolations, FILE_URL } from "./helpers.mjs";
+import { launch, newPage, tab, openDemo, axeViolations, FILE_URL } from "./helpers.mjs";
 
 let browser;
 before(async () => { browser = await launch(); });

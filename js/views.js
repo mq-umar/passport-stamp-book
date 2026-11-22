@@ -170,7 +170,6 @@ var Views = (function () {
   }
 
   function settings(c) {
-    var S = c.S;
     return '<div class="panel">' + typeSwitches(c, "st") +
       '<small>Country stamps for international spend are always on. Stamps are built only from posted card transactions; no device location is used.</small></div>' +
       '<div class="panel"><b>How stamps work</b><p class="mute" style="margin:6px 0 0">A stamp needs a posted purchase of at least $' + R.MIN_AMT +

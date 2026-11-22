@@ -38,7 +38,7 @@ Rules for every pass: tests stay green and never decrease in number; visual chan
 - [ ] 6. Optional haptics behind a setting
 
 ## Track 4: Engineering quality
-- [ ] 1. ESLint and Prettier, wired into CI
+- [x] 1. ESLint, wired into CI (Prettier deliberately skipped: it would rewrite every file for no user benefit)
 - [ ] 2. JSDoc types and `tsc --checkJs`
 - [ ] 3. Visual-regression screenshots with pixel-diff test
 - [ ] 4. Partial re-rendering for search and a render-time budget

@@ -1,3 +1,4 @@
+/* global axe */
 // Shared helpers for the browser (Puppeteer) tests.
 // Setup: npm i -D puppeteer-core axe-core   (set CHROME_PATH if Chrome/Edge is not in a default location)
 import fs from "node:fs";
