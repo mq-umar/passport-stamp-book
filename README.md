@@ -50,7 +50,8 @@ On first open, tap the cover, walk through onboarding, then try **Demo controls 
 ```bash
 npm test            # 34 unit + API tests (Node built-in runner, no dependencies)
 npm install         # once, for the browser tests
-npm run test:ui     # 35 browser tests (Puppeteer) incl. accessibility and layout audits
+npm run test:ui     # browser tests (Puppeteer) incl. an axe accessibility audit
+npm run test:layout # text-fit audit at six widths, light and night
 ```
 
 | Suite | What it covers |

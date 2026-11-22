@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CHROME_PATH: /usr/bin/google-chrome
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check Chrome is available
+        # ubuntu-latest includes Chrome here; fail early if the runner image changes.
+        run: |
+          if [ ! -x /usr/bin/google-chrome ]; then
+            echo "::error::Expected Chrome at /usr/bin/google-chrome on ubuntu-latest, but it was not found."
+            exit 1
+          fi
+          /usr/bin/google-chrome --version
+      - run: npm run test:ui
+      # The layout audit measures real text widths, and Linux runners lack the Palatino/Georgia fonts used locally,
+      # so it reports but does not block until a baseline has been confirmed on the runner.
+      - name: Layout audit (informational)
+        run: npm run test:layout
+        continue-on-error: true
