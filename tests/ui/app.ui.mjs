@@ -150,21 +150,21 @@ test("save image creates a real PNG; share sheet and its failure paths", async (
   const page = await session();
   await tab(page, "trips");
   await page.evaluate(() => { window.__b = null; const o = URL.createObjectURL; URL.createObjectURL = (b) => { window.__b = b; return o.call(URL, b); }; });
-  await page.click("#save"); await sleep(2500);
+  await page.click("#save"); await page.waitForFunction(() => window.__b, { timeout: 10000 });
   const info = await page.evaluate(async () => window.__b && { type: window.__b.type, size: window.__b.size, magic: Array.from(new Uint8Array(await window.__b.slice(1, 4).arrayBuffer())) });
   assert.equal(info.type, "image/png"); assert.ok(info.size > 5000); assert.equal(String.fromCharCode(...info.magic), "PNG");
   // share sheet called with the file
   await page.evaluate(() => { window.__s = null; navigator.canShare = () => true; navigator.share = async (d) => { window.__s = { n: d.files[0].name, t: d.files[0].type, title: d.title }; }; });
-  await page.click("#share"); await sleep(2500);
+  await page.click("#share"); await page.waitForFunction(() => window.__s, { timeout: 10000 });
   assert.deepEqual(await page.evaluate(() => window.__s), { n: "trip-recap.png", t: "image/png", title: "Trip to Nashville" });
   // user cancels: no download, friendly message
   await page.evaluate(() => { navigator.share = async () => { throw new DOMException("c", "AbortError"); }; window.__d = 0; HTMLAnchorElement.prototype.click = function () { if (this.download) window.__d++; }; });
-  await page.click("#share"); await sleep(2500);
+  await page.click("#share"); await page.waitForFunction(() => /cancelled/.test(document.getElementById("msg").textContent), { timeout: 10000 });
   assert.equal(await page.evaluate(() => window.__d), 0);
   assert.match(await page.$eval("#msg", (e) => e.textContent), /cancelled/);
   // any other failure falls back to download
   await page.evaluate(() => { navigator.share = async () => { throw new Error("boom"); }; });
-  await page.click("#share"); await sleep(2500);
+  await page.click("#share"); await page.waitForFunction(() => window.__d === 1, { timeout: 10000 });
   assert.equal(await page.evaluate(() => window.__d), 1);
   noErrors(page); await page.closeCtx();
 });
@@ -338,5 +338,19 @@ test("goals: progress follows visible stamps and hiding stamps un-completes a go
   const after = await goals();
   assert.equal(after["Weekend roamer"].done, false);
   assert.match(after["Weekend roamer"].n, /^0 \/ 3$/);
+  noErrors(page); await page.closeCtx();
+});
+
+test("FR8: turning a stamp type off hides its stamps everywhere, turning it on brings them back", async () => {
+  const page = await session();
+  const kinds = async () => page.$$eval(".stamp", (els) => [...new Set(els.map((e) => e.className.match(/k-(\w+)/)[1]))].sort());
+  assert.deepEqual(await kinds(), ["city", "dining", "state"]);
+  await tab(page, "settings"); await page.click("[data-type=dining]"); await tab(page, "passport");
+  assert.deepEqual(await kinds(), ["city", "state"]);
+  assert.match(await page.$eval(".mrz", (e) => e.textContent), /Cuisines0/);
+  await tab(page, "settings"); await page.click("[data-type=domestic]"); await tab(page, "passport");
+  assert.deepEqual(await kinds(), []);
+  await tab(page, "settings"); await page.click("[data-type=dining]"); await page.click("[data-type=domestic]"); await tab(page, "passport");
+  assert.deepEqual(await kinds(), ["city", "dining", "state"]);
   noErrors(page); await page.closeCtx();
 });
