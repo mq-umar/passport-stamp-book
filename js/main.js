@@ -28,6 +28,7 @@
     var sel = null;
     if (e.id) sel = "#" + e.id;
     else if (e.dataset.type) sel = '[data-type="' + e.dataset.type + '"]';
+    else if (e.dataset.notify) sel = '[data-notify="' + e.dataset.notify + '"]';
     else if (e.dataset.tab) sel = '[data-tab="' + e.dataset.tab + '"]';
     else if (e.dataset.filter) sel = '[data-filter="' + e.dataset.filter + '"]';
     else if (e.dataset.trip) sel = '[data-trip="' + e.dataset.trip + '"]';
@@ -142,6 +143,7 @@
   app.addEventListener("change", function (e) {
     var S = Store.get(), t = e.target;
     if (t.dataset && t.dataset.type) { S.types[t.dataset.type] = t.checked; if (S.tab === "settings") S.onboarded = true; Store.log("stamp_type_toggled", { type: t.dataset.type, on: t.checked }); render(); return; }
+    if (t.dataset && t.dataset.notify) { S.notify[t.dataset.notify] = t.checked; Store.log("notification_pref_changed", { kind: t.dataset.notify, on: t.checked }); render(); return; }
     if (t.id === "names") { S.showNames = t.checked; Store.log("privacy_setting_changed", { merchant_names: t.checked }); render(); return; }
     if (t.id === "off") {
       S.offline = t.checked;

@@ -9,7 +9,7 @@ var Store = (function () {
       token: null, live: false, cache: null, msg: "", p: "maya", tab: "passport",
       opened: false, onboarded: false, obStep: 0,
       hidden: new Set(), hiddenPlaces: new Set(), refunded: new Set(), disputed: new Set(), seen: new Set(),
-      types: { dining: false, domestic: false }, showNames: false, offline: false,
+      types: { dining: false, domestic: false }, showNames: false, notify: { recap: false, digest: false }, offline: false,
       events: [], title: {}, queue: [], notice: "", demoOpen: false, filter: "all", tripSel: "", q: "", reported: []
     };
   };
@@ -46,6 +46,7 @@ var Store = (function () {
     if (!PERSONAS[S.p]) S.p = "maya";
     if (["passport", "trips", "settings"].indexOf(S.tab) < 0) S.tab = "passport";
     if (["all", "city", "state", "dining", "intl"].indexOf(S.filter) < 0) S.filter = "all";
+    if (!S.notify || typeof S.notify.recap !== "boolean" || typeof S.notify.digest !== "boolean") S.notify = { recap: false, digest: false };
     if (!S.types || typeof S.types.dining !== "boolean" || typeof S.types.domestic !== "boolean") S.types = { dining: false, domestic: false };
     return S;
   }
@@ -128,7 +129,7 @@ var Store = (function () {
     return {
       exportedAt: new Date().toISOString(), persona: S.p,
       stampTypes: S.types, hiddenStamps: Array.from(S.hidden), hiddenPlaces: Array.from(S.hiddenPlaces), seenStamps: Array.from(S.seen), refundedPurchases: Array.from(S.refunded), disputedPurchases: Array.from(S.disputed),
-      recapNames: S.title, unsyncedRecapNames: S.queue.map(function (q) { return { trip: q.k || q.p, name: q.v }; }), showMerchantNamesInShares: S.showNames, reportedStamps: S.reported, activityLog: S.events
+      recapNames: S.title, unsyncedRecapNames: S.queue.map(function (q) { return { trip: q.k || q.p, name: q.v }; }), showMerchantNamesInShares: S.showNames, notifications: S.notify, reportedStamps: S.reported, activityLog: S.events
     };
   }
 

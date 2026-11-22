@@ -23,7 +23,7 @@ Rules for every pass: tests stay green and never decrease in number; visual chan
 - [x] 1. Real trip detection (gap of more than 2 days starts a new trip) and an "All trips" list; fourth demo persona with three trips
 - [x] 2. Collection goals with a commemorative seal (five goals, derived from visible stamps)
 - [x] 3. Privacy centre: export and delete my data
-- [ ] 4. Notification preferences and digest preview (PRD US15)
+- [x] 4. Notification preferences and digest preview (PRD US15)
 - [ ] 5. Per-stamp share image
 - [ ] 6. Year in review
 - [ ] 7. Analytics view from the PRD event spec

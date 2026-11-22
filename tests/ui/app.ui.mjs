@@ -413,3 +413,18 @@ test("hide a place from the recap: it leaves the preview and count, can be shown
   assert.equal(await meals(), before);
   noErrors(page); await page.closeCtx();
 });
+
+test("notifications: both off by default, previews never show amounts, choices persist", async () => {
+  const page = await session();
+  await tab(page, "settings");
+  const on = () => page.$$eval("[data-notify]", (els) => els.map((e) => e.checked));
+  assert.deepEqual(await on(), [false, false]);
+  const text = await page.$eval('[aria-label="Notifications"]', (e) => e.textContent);
+  assert.match(text, /recap is ready: \d+ stamps?, \d+ meals?/);
+  assert.doesNotMatch(text, /\$\d/);
+  await page.click('[data-notify="recap"]');
+  assert.equal(await page.evaluate(() => document.activeElement.dataset.notify), "recap");
+  await page.reload(); await tab(page, "settings");
+  assert.deepEqual(await on(), [true, false]);
+  noErrors(page); await page.closeCtx();
+});

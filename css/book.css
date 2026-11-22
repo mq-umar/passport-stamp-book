@@ -225,3 +225,8 @@ button.danger { border-color: var(--bad); color: var(--bad); }
 .place .link { flex: none; font-size: 12px; }
 .place { flex-wrap: wrap; }
 .place > div { min-width: 0; flex: 1 1 180px; }
+
+/* Notification previews */
+.notif { margin-top: 8px; padding: 10px 12px; border: 1px solid var(--rule); background: var(--page-2); }
+.notif .app { font: 600 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
+.notif p { margin: 4px 0 0; }

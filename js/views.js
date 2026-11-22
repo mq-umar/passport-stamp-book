@@ -174,7 +174,23 @@ var Views = (function () {
     return '<div class="panel">' + typeSwitches(c, "st") +
       '<small>Country stamps for international spend are always on. Stamps are built only from posted card transactions; no device location is used.</small></div>' +
       '<div class="panel"><b>How stamps work</b><p class="mute" style="margin:6px 0 0">A stamp needs a posted purchase of at least $' + R.MIN_AMT +
-      '. Refunded or disputed purchases never earn one. Nothing here uses your location.</p></div>' + privacy(c);
+      '. Refunded or disputed purchases never earn one. Nothing here uses your location.</p></div>' + notifications(c) + privacy(c);
+  }
+
+  /** Notification choices (both off until chosen, at most one a day) and a preview of exactly what would be sent. */
+  function notifications(c) {
+    var S = c.S, r = c.recap, n = S.notify || {};
+    var recapMsg = r ? 'Your ' + esc(r.destCity) + ' recap is ready: ' + r.stamps.length + (r.stamps.length === 1 ? ' stamp' : ' stamps') + ', ' + r.dining + (r.dining === 1 ? ' meal' : ' meals') + '. Tap to review before you share.' : 'Your trip recap is ready. Tap to review before you share.';
+    var fresh = c.visible.length;
+    var digestMsg = 'Your Passport so far: ' + fresh + (fresh === 1 ? ' stamp' : ' stamps') + '. Open it to see what to collect next.';
+    function row(key, title, sub) {
+      return '<div class="setting"><div><b>' + title + '</b><small id="n-' + key + '">' + sub + '</small></div><input type="checkbox" aria-describedby="n-' + key + '" aria-label="' + title + '" data-notify="' + key + '" ' + (n[key] ? "checked" : "") + '></div>';
+    }
+    return '<section class="panel" aria-label="Notifications"><h2 class="sec" style="margin-top:0">Notifications</h2>' +
+      row("recap", "Trip recap ready", "One message when a trip recap is ready") + row("digest", "Weekly digest", "A short summary of your Passport, once a week") +
+      '<small>Off until you choose. Never more than one a day, and never any amounts or restaurant names.</small>' +
+      '<h3 class="sec">Preview</h3><div class="notif" aria-label="Notification preview"><span class="app">Passport</span><p>' + recapMsg + '</p></div>' +
+      '<div class="notif" aria-label="Digest preview"><span class="app">Passport &middot; weekly</span><p>' + digestMsg + '</p></div></section>';
   }
 
   /** Privacy centre: download a copy of what is stored, or delete it. Deleting asks twice, in the page (no browser dialog). */
