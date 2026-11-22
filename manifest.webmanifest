@@ -1,0 +1,11 @@
+{
+  "name": "Passport stamp book (concept)",
+  "short_name": "Passport",
+  "description": "A concept stamp-book for everyday trips and meals. Fake data only.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#5b1a1a",
+  "theme_color": "#5b1a1a",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

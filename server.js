@@ -14,6 +14,9 @@ const MAX_SESSIONS = 500;
 const STATIC_FILES = Object.freeze({
   "/": { file: "index.html", contentType: "text/html; charset=utf-8", cacheControl: "no-store" },
   "/index.html": { file: "index.html", contentType: "text/html; charset=utf-8", cacheControl: "no-store" },
+  "/manifest.webmanifest": { file: "manifest.webmanifest", contentType: "application/manifest+json; charset=utf-8", cacheControl: "no-cache" },
+  "/sw.js": { file: "sw.js", contentType: "text/javascript; charset=utf-8", cacheControl: "no-cache" },
+  "/icon.svg": { file: "icon.svg", contentType: "image/svg+xml", cacheControl: "no-cache" },
 });
 const STATIC_DIRECTORIES = Object.freeze({
   css: { directory: "css", extension: ".css", contentType: "text/css; charset=utf-8" },

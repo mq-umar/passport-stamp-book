@@ -361,3 +361,16 @@ test("DELETE /api/prefs clears only the caller's stored preferences and needs a 
   assert.deepEqual((await request("/api/prefs", { headers: ha })).body, {});
   assert.deepEqual((await request("/api/prefs", { headers: hb })).body, prefs);
 });
+
+test("PWA files are served with the right types and the service worker never needs /api", async () => {
+  const expected = { "/manifest.webmanifest": "application/manifest+json", "/sw.js": "text/javascript", "/icon.svg": "image/svg+xml" };
+  for (const [p, type] of Object.entries(expected)) {
+    const { status, headers } = await rawGet(p);
+    assert.equal(status, 200, p);
+    assert.ok(headers["content-type"].startsWith(type), `${p}: ${headers["content-type"]}`);
+  }
+  const manifest = JSON.parse((await rawGet("/manifest.webmanifest")).body);
+  assert.equal(manifest.display, "standalone");
+  assert.ok(manifest.icons.length > 0);
+  assert.match((await rawGet("/sw.js")).body, /\/api\//, "service worker must skip /api");
+});

@@ -105,3 +105,18 @@ test("a change made just before deleting cannot bring the server copy back", asy
   assert.deepEqual(await page.evaluate(async (t) => (await fetch("/api/prefs", { headers: { authorization: "Bearer " + t } })).json(), token), {});
   await page.closeCtx();
 });
+
+test("after one visit the app shell opens offline, and nothing from /api is cached", async () => {
+  const page = await newPage(browser);
+  await page.goto(base);
+  await page.evaluate(async () => { await navigator.serviceWorker.ready; });
+  await page.reload(); // now controlled by the worker
+  await page.waitForFunction(() => navigator.serviceWorker.controller, { timeout: 10000 });
+  await page.setOfflineMode(true);
+  await page.reload();
+  assert.match(await page.$eval("#app", (e) => e.textContent), /Sign in/, "shell loads with no network");
+  await page.setOfflineMode(false);
+  const cached = await page.evaluate(async () => { const keys = await caches.keys(); const out = []; for (const k of keys) for (const r of await (await caches.open(k)).keys()) out.push(new URL(r.url).pathname); return out; });
+  assert.ok(cached.length > 5 && cached.every((p) => !p.startsWith("/api/")), cached.join(","));
+  await page.closeCtx();
+});

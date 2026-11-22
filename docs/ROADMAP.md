@@ -13,8 +13,8 @@ Rules for every pass: tests stay green and never decrease in number; visual chan
 ## Track 1: Ship-readiness
 - [x] 1. `.gitattributes` and normalised line endings
 - [x] 2. GitHub Actions CI (unit, API, browser; layout audit informational). Badges to be added once a repo exists
-- [ ] 3. Open Graph / social image and meta tags
-- [ ] 4. PWA: manifest, icons from the crest, service worker, offline-after-first-visit test
+- [x] 3. Open Graph / social image and meta tags
+- [x] 4. PWA: manifest, icons from the crest, service worker, offline-after-first-visit test
 - [ ] 5. README demo GIF from a scripted golden-path capture
 - [ ] 6. `docs/case-study.md`
 - [ ] 7. Deployment pack (documented, not executed)

@@ -2,6 +2,8 @@
 
 One line per improvement pass, newest first.
 
+- Pass 10: installable and offline. Web manifest, icon, service worker (caches only the static shell, never `/api`), Open Graph and theme-colour meta tags; the book opens offline after one visit (sign-in screen, since data needs the backend). +1 server test, +1 browser test.
+
 - Pass 9: notification preferences and digest preview (PRD US15). Settings gets two switches (trip recap ready, weekly digest), both off until chosen, with previews of the exact message (no amounts or restaurant names). Fixed focus being lost after toggling. +1 browser test.
 
 - Pass 8: hide a place from a recap (PRD US7). Each place on the Trips tab has Hide/Show; hidden places leave the recap, meal count, share preview and share image, stay listed (struck through) so they can come back, persist across reloads and appear in the data export. +1 unit, +1 browser test; layout fix for 320 px.
