@@ -1,148 +1,109 @@
 # Passport stamp book
 
-**A product concept, built end to end:** a stamp-book for everyday trips and meals, styled as a physical passport. It started as a product requirements document and became a working prototype, with a mock backend and 104 automated tests plus a lint check.
+A small web app that turns everyday trips and meals into stamps in a passport-style book. It started as a product requirements doc and I built a working prototype to test the idea. Everything runs on fake data.
 
-> Independent portfolio concept. Fake data only. It is **not affiliated with, or endorsed by, any card issuer**, uses no issuer branding, and contains no real customer data.
+Live demo: https://mq-umar.github.io/passport-stamp-book/
+
+This is an independent portfolio project. It isn't affiliated with or endorsed by any card issuer, it uses no issuer branding, and no real customer data is involved.
 
 | Cover | Passport | Stamp detail |
 |---|---|---|
 | ![Cover](docs/01-cover.png) | ![Passport](docs/02-passport.png) | ![Stamp sheet](docs/03-stamp-sheet.png) |
 
-| Trip recap (boarding pass) | Night mode | Desktop |
+| Trip recap | Night mode | Desktop |
 |---|---|---|
 | ![Trip recap](docs/04-trip-recap.png) | ![Night mode](docs/05-night-mode.png) | ![Desktop](docs/06-desktop.png) |
 
-## The problem
+## The idea
 
-Digital travel stamps exist, but they reward only international trips. People who travel abroad once a year, or never, have nothing to come back to between trips, even though they eat out and travel within their own country all the time.
+Digital travel stamps already exist, but they only reward trips abroad. If you travel internationally once a year, or never, there's nothing to come back to in between, even though you eat out and travel within your own country all the time.
 
-**The concept:** earn stamps for *dining* (a new cuisine, a meal in a new city) and *domestic travel* (a new city or state), and turn every trip into a shareable boarding-pass recap. The full reasoning, personas, metrics, experiment plan and risks are in the [product requirements document](docs/PRD.md) (8 pages).
+This prototype adds stamps for dining (a new cuisine, a meal in a new city) and for domestic travel (a new city or state), and wraps each trip into a boarding-pass style recap you can save or share as an image. The reasoning, personas, metrics and risks are in the [PRD](docs/PRD.md).
 
-## What the prototype does
+## What's in it
 
-- **Stamps from card activity** with real rules: posted purchases only, a $5 minimum, trips more than 75 miles from home, no guessed cuisines, nothing for refunded or disputed purchases.
-- **Pressed-ink stamps**: four shapes (round city, boxed state, hexagonal dining, double-ring country), ink-bleed edges, postmarks, drawn entirely in SVG.
-- **Stamp detail**: the purchases that earned it, with amounts shown only there. Hide a stamp or report a wrong one.
-- **Search and filter**, plus a back-of-book **index** (50 states, 20 cuisines).
-- **Trip recap as a boarding pass** with route, barcode and places timeline. Trips are detected automatically (a pause of more than two days starts a new one), each with its own recap and name, and an **All trips** list to revisit past ones. **Share or save it as an image**; amounts and card details never appear, restaurant names are opt-in.
-- **Three-step onboarding** that states the privacy promises before asking for any choice.
-- **Offline mode**: cached snapshot, paused changes, queued edits that sync on reconnect, all surviving a reload.
-- **Mock backend**: sign-in, a transaction feed per persona and server-side preferences.
-- **Night mode**, reduced-motion support, keyboard and screen-reader support.
-- **Collection goals** (3 and 5 states, 5 cities, 5 cuisines, first country) with progress bars and a seal when finished.
-- **Privacy centre**: export your data (no amounts, no merchant names) or delete it, with a two-step confirmation.
-- **Notification preferences** with previews of the exact message. Off until chosen. The prototype sends nothing.
-- **Hide a place from a recap**; it also leaves the share image.
-- **Installable and offline**: web manifest and a service worker that caches only the static shell, never the API.
-- **Prototype tools** (bottom of Settings, collapsed; add `?demo=1` to the address to show them on every tab): switch between four travellers, go offline, refund or dispute a purchase and watch the stamps react.
+- Stamps come from card purchases, using a few fixed rules: posted purchases only, at least $5, more than 75 miles from home for domestic stamps, no cuisine stamp unless the cuisine is known, and nothing for refunded or disputed purchases.
+- The stamps are drawn in SVG, in four shapes (city, state, dining, country), with rough ink edges and postmarks.
+- Tapping a stamp shows the purchases that earned it. Amounts only appear there, never in anything you share. You can hide a stamp or report a wrong one.
+- Search, filters by kind, and an index page for the 50 states and 20 cuisines.
+- Trips are found automatically: a gap of more than two days between away-from-home purchases starts a new trip. Each trip has its own recap and name. You can hide individual places from a recap, and restaurant names stay off the shared image unless you turn them on.
+- Five collection goals, like five states or five cuisines, with progress bars.
+- Settings for dining and domestic stamps, notification choices (with a preview of each message, though the prototype never sends anything), and a "Your data" section to export or delete everything.
+- Works offline after the first visit, can be installed as an app, and has a night mode, reduced-motion support and keyboard support.
+- A small mock backend with a login, a transaction feed and saved preferences.
 
-## Run it
+At the bottom of Settings there's a collapsed "Prototype tools" section for reviewers. It lets you switch between four travellers, go offline, or pretend a purchase was refunded and watch the stamps react. Adding `?demo=1` to the address shows it on every tab.
 
-No build step.
+## Running it
+
+There's no build step. The easiest way is to open `index.html` in a browser, which uses the built-in data and has no login.
+
+To run it with the mock backend (log in with `demo` / `demo`):
 
 ```bash
-# Option 1: just open index.html in a browser (built-in data, no sign-in)
-
-# Option 2: with the mock backend (sign in with demo / demo)
-npm start                       # http://localhost:3000
-HOST=0.0.0.0 npm start          # to try it from your phone on the same Wi-Fi
+npm start     # http://localhost:3000
 ```
 
-On first open, tap the cover, walk through onboarding, then open **Settings → Prototype tools → Pretend a purchase changed**.
-
-## Tests
+For the tests:
 
 ```bash
-npm test            # unit + API tests (Node built-in runner, no dependencies)
-npm run lint        # ESLint
-npm install         # once, for the browser tests
-npm run test:ui     # browser tests (Puppeteer) incl. an axe accessibility audit
-npm run test:layout # text-fit audit at six widths, light and night
-npm run screenshots # regenerate the images in docs/
+npm test              # unit and API tests, no install needed
+npm install           # once, for the browser tests
+npm run lint
+npm run test:ui       # browser tests, including an axe accessibility audit
+npm run test:layout   # checks text fits at six screen widths, light and night
+npm run screenshots   # regenerates the images in docs/
 ```
 
-| Suite | What it covers |
-|---|---|
-| `tests/unit/rules.test.js` | Every product rule: posted-only, minimum amount, distance, no guessed cuisine, refund and dispute, per-persona isolation, recap, dates |
-| `tests/unit/data.test.js` | The browser data file and the server data file stay identical and well-formed |
-| `server.test.js` | Login, per-session state, 401/404/405/413/415, input validation, static-file allowlist and path traversal |
-| `tests/ui/app.ui.mjs` | Onboarding, stamps, hide/restore, dialog behaviour, search, recap, privacy defaults, share and save, offline, corrupted saved state, focus handling, reduced motion |
-| `tests/ui/a11y.ui.mjs` | WCAG 2.0/2.1 A and AA on every screen, in light and night, at phone and desktop widths |
-| `tests/ui/api.ui.mjs` | The front end against the real mock backend |
-| `tests/ui/layout.ui.mjs` | Text fits: at 6 widths (320 to 1280px), in light and night, on every screen, nothing overflows the page, leaves its container or is clipped |
+Set `CHROME_PATH` if Chrome or Edge isn't in a default location. There are around a hundred tests in total, covering the stamp rules, the server, the screens and accessibility.
 
-Set `CHROME_PATH` if Chrome or Edge is not in a default location.
-
-## How it is built
+## How it's put together
 
 ```
-index.html            shell (carries the Content-Security-Policy)
-sw.js, manifest.webmanifest, icon.svg   offline support and install
-css/                  tokens (palette, type), book (layout, cover, ticket), stamps
-js/rules.js           pure product rules; also loaded by Node for unit tests
-js/stamps-art.js      SVG stamps, crest, barcode; canvas share image
-js/store.js           state, localStorage, API sync
-js/views.js           render functions (every dynamic value is escaped)
-js/main.js            boot and event handling
-js/config.js          deployment switch (static mode for hosts with no backend)
-js/boot.js            service worker registration
-server.js             zero-dependency mock API (sessions, validation, limits)
-tests/                unit and browser tests
-docs/                 PRD, design decisions, screenshots
+index.html                    page shell and Content-Security-Policy
+css/                          colours and type, layout, stamps
+js/rules.js                   the stamp and trip rules (also used by the unit tests)
+js/stamps-art.js              SVG stamps and the share image
+js/store.js                   state, localStorage, syncing with the backend
+js/views.js                   draws each screen
+js/main.js                    startup and events
+js/config.js, js/boot.js      deployment switch, service worker registration
+sw.js, manifest.webmanifest   offline use and install
+server.js                     the mock API
+tests/, scripts/              tests and the screenshot script
+docs/                         PRD, design notes, security notes, screenshots
 ```
 
-Vanilla JavaScript with classic scripts, so it also works from `file://`. No framework, no bundler, no runtime dependencies.
+It's plain JavaScript loaded with ordinary script tags, so it also works from `file://`. No framework, no bundler, no runtime dependencies.
 
-## Live demo and deployment
+## Deploying
 
-**Vercel (static demo).** `vercel.json` already holds the build (`node scripts/build-static.mjs`), the output folder (`_site`) and the security headers, so there is nothing to configure:
+The live demo is a static copy: built-in data, no login, no backend. Two ways to publish it:
 
-```bash
-npx vercel          # first run: log in and answer the prompts (framework: Other); gives a preview URL
-npx vercel --prod   # publishes to the production URL
-```
+- GitHub Pages: the workflow in `.github/workflows/pages.yml` lints, tests and publishes the front-end files on every push to `main`.
+- Vercel: `vercel.json` already has the build command, output folder and security headers. Run `npx vercel` and then `npx vercel --prod`, or import the repo in the Vercel dashboard. Vercel turns on a login wall for new projects, so switch off Vercel Authentication under Project → Settings → Deployment Protection if you want the demo public.
 
-Or import the GitHub repository in the Vercel dashboard and every push to `main` deploys. Vercel's *Deployment Protection* is on by default for new projects; to make the demo publicly viewable, turn off **Vercel Authentication** in Project → Settings → Deployment Protection.
+GitHub Pages can't send custom headers, so that copy can be embedded in other pages. Vercel sends them, so it's the better public link. The mock backend is for local use only and isn't deployed.
 
-A static copy of the app (built-in fake data, no sign-in, no backend) can be published with GitHub Pages: `.github/workflows/pages.yml` lints, tests and publishes only the front-end files, and switches `js/config.js` to static mode. In the repository settings choose **Pages → Source: GitHub Actions**. The mock backend (`npm start`) is for local use only and is not deployed.
+## Security
 
-## Security and transparency
+What's in place: a strict Content-Security-Policy (scripts from the same origin only, no inline scripts), standard security headers, escaped output everywhere, a service worker that never caches the API, and no runtime dependencies. `npm audit` reports nothing. Tests cover injected scripts, hostile text in every data field, path traversal and the headers. Exports and shared images never include amounts or card details.
 
-What is in place:
-- **No runtime dependencies** and `npm audit` reports 0 vulnerabilities. The only dev dependencies are ESLint, Puppeteer and axe-core.
-- **Strict Content-Security-Policy** (no inline scripts, no `eval`, no remote origins, no plugins, framing denied) sent as a header by the server and also embedded in the page for static hosts. A browser test proves an injected script and an injected inline event handler do not run.
-- Every dynamic value is HTML-escaped before it reaches the page; saved browser state is type-checked on load.
-- The server sends `nosniff`, `no-referrer`, `X-Frame-Options: DENY`, `Permissions-Policy` and `COOP` on every response, serves only an allowlist of static files (path traversal is tested), caps request sizes and sessions, compares credentials in constant time, and listens on localhost unless you set `HOST`.
-- The service worker never caches `/api` and only deletes its own caches.
-- Shared recap images and data exports never contain amounts or card details; restaurant names are opt-in.
-- No secrets, API keys, personal data or real customer data are in the repository. All data is fake.
+What isn't: the backend is a mock. It has one public login, in-memory sessions, no sign-in rate limiting and no HTTPS, so don't put it on the internet or load real data into it. The sign-in token is kept in `localStorage`, where a real product would use an HttpOnly cookie. The CSP still allows inline styles. The GitHub Actions are pinned to major versions rather than commit hashes.
 
-What is not, stated plainly:
-- **The backend is a mock.** One public demo login (`demo` / `demo`), in-memory sessions, no rate limiting on sign-in, no HTTPS. Do not expose it to the internet or put real data in it. Setting `HOST=0.0.0.0` makes it reachable by anyone on your network.
-- The sign-in token is kept in `localStorage`, so a successful script injection (which the CSP is there to prevent) could read it. A real product would use an HttpOnly cookie.
-- The CSP allows inline *styles* (the views set a few style attributes). Scripts are strictly self-only.
-- The Pages workflow uses GitHub's own actions pinned to major versions, not to commit hashes.
-- Not tested on a real phone or with a real screen reader (see Known limits). Automated checks cover part of accessibility only.
-- This is a self-review plus a scoped AI review (OpenAI Codex), not an independent human audit. What was checked, the three Low findings and what was done about each, and the known weaknesses are in [docs/SECURITY-REVIEW.md](docs/SECURITY-REVIEW.md). One finding is deliberately left: the GitHub Pages copy cannot send anti-framing headers, so use the Vercel deployment as the public link.
+The details, including what an AI code review (OpenAI Codex) found and what was done about each point, are in [docs/SECURITY-REVIEW.md](docs/SECURITY-REVIEW.md). This is a self-review plus that AI review, not an audit by a person.
 
-To report a problem, open an issue (this is a portfolio prototype, with no bounty or SLA).
+## Known gaps
 
-## How this was made
+- I haven't tested it on a real phone or with a real screen reader. Automated accessibility checks only catch part of the problems.
+- Trip detection is a simple gap rule. It doesn't merge multi-city itineraries.
+- Notification settings are stored on the device and nothing is ever sent.
+- There's no share image for a single stamp yet. The [roadmap](docs/ROADMAP.md) has what's planned next.
+- Stamps live in the app only. The PRD discusses putting them on a blockchain and defers it.
 
-Built by the repository owner working with AI coding tools: Claude Code wrote and revised most of the code and tests, and OpenAI Codex was used as a second reviewer. Commits made with Claude carry a `Co-Authored-By` line. The product thinking in [docs/PRD.md](docs/PRD.md) is the owner's; every number in it that is not cited is marked as an assumption.
+## How it was made
 
-## Design
-
-The app is a passport book rather than a dashboard: cover, ruled pages, ink-bled stamps, a boarding-pass recap. No gradients, no emoji, no pill chips. The reasoning, the rules I set myself and the accessibility choices are in [docs/design-decisions.md](docs/design-decisions.md).
-
-## Known limits
-
-- **Not tested on a real phone or with a real screen reader.** The share sheet path is covered by a mocked test, and accessibility by automated audits, which catch only part of the problems.
-- The backend is a mock: one demo login, in-memory sessions, fake data. A real build would use real authentication, a card-transaction feed and rate limiting.
-- Trip detection is a simple rule (a gap of more than two days between away-from-home purchases). It does not yet merge multi-city itineraries or use destination changes.
-- Notification settings are saved on the device only and no notification is ever sent.
-- There is no share image for a single stamp yet (see the roadmap).
-- Stamps are app-only. The PRD discusses, and defers, putting any stamp on a blockchain.
+The code and tests were written with AI coding tools: mostly Claude Code, with OpenAI Codex as a second reviewer. The product thinking is in the PRD in `docs/`; any number in it that isn't cited is marked as an assumption. Commits made with Claude carry a `Co-Authored-By` line. The design notes are in [docs/design-decisions.md](docs/design-decisions.md), and the list of changes is in [docs/CHANGELOG.md](docs/CHANGELOG.md).
 
 ## License
 
